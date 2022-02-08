@@ -32,18 +32,18 @@ def send_async_email(email_info):
         # Print any error messages to stdout
         print("error :- ",e)
 
-
 @flask_app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'GET':
         return render_template('index.html', email=session.get('email', ''))
 
-@flask_app.route('/send_email', methods=['POST'])
+@flask_app.route('/api/v1/send_email', methods=['POST'])
 def send_email():
     #fgenerate email body from request object base on request type 
     email_data = generate_email_body(request)
     #send async email
     send_async_email.delay(email_data)
+    return flask_app.make_response('Hello, World')
 
 if __name__ == '__main__':
     # run application

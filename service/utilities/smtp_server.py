@@ -1,7 +1,8 @@
 import smtplib , ssl
 
 def get_context():
-    return ssl.ssl.create_default_context()
+    context = ssl.create_default_context()
+    return context
 
 def init_smtp_server(config):
     try:

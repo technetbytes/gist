@@ -2,10 +2,10 @@ from celery import Celery
 
 def get_celery(app,config):
     celery = Celery(
-        'mailserver',
+        'main',
         backend=config['task_queue']['celery_result_backend'],
         broker=config['task_queue']['celery_broker_url'],
-        include=['gist']
+        include=['main']
     )
     #celery.conf.update(app.config)
 
