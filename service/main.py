@@ -1,6 +1,6 @@
 from pyexpat.errors import messages
 from flask import Flask, request, render_template, session, flash, redirect, url_for
-from celery_core import get_celery
+from core.celery_core import get_celery
 from config.setting import load_setting
 from utilities.smtp_server import get_context, init_smtp_server
 from utilities.email import build_message, generate_email_body
