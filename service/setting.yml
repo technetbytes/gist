@@ -1,0 +1,13 @@
+smtp_server:
+    gateway: aggtor33221.hostgator.com
+    username: saqibullah@mcs.com.pk
+    password: _SuZYm
+    port: 465
+    tls : True
+task_queue:
+    celery_broker_url : redis://localhost:6379/0
+    celery_result_backend : redis://localhost:6379/0
+email:
+    sender: saqibullah@mcs.com.pk
+others:
+  secret_key : XrayYankeeZulu
