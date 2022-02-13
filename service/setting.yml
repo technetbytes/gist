@@ -1,7 +1,7 @@
 smtp_server:
-    gateway: gator301.hostgator.com
+    gateway: gator3021.hostgator.com
     username: saqibullah@mcs.com.pk
-    password: _Sv!NBYm
+    password: _SuZ9BYm
     port: 465
     tls : True
 task_queue:

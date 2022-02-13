@@ -1,3 +1,5 @@
+from socket import socket
+from threading import Lock
 from pyexpat.errors import messages
 from flask import Flask, request, jsonify, render_template, session, flash, redirect, url_for, make_response
 from core.celery_core import get_celery
@@ -6,6 +8,12 @@ from config.setting import load_setting
 from utilities.smtp_server import get_context, init_smtp_server
 from utilities.email import build_message, generate_email_body
 from celery.result import AsyncResult
+from flask_socketio import SocketIO, emit, disconnect
+
+# Set this variable to "threading", "eventlet" or "gevent" to test the
+# different async modes, or leave it set to None for the application to choose
+# the best option based on installed packages.
+async_mode = None
 
 # Flask application
 flask_app = Flask(__name__)
@@ -16,6 +24,12 @@ config = load_setting()
 # Set application secret_key
 flask_app.config['SECRET_KEY'] = config['others']['secret_key']
 flask_app.config['SEND_INFO'] = config['email']['sender']
+
+# init Socket-IO
+socketio = SocketIO(flask_app, async_mode=async_mode)
+
+thread = None
+thread_lock = Lock()
 
 # Initialize object
 celerymq = get_celery(app=flask_app, config=config)
@@ -38,8 +52,7 @@ def send_async_email(self, email_info):
 @flask_app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'GET':
-        return render_template('index.html', email=session.get('email', ''))
-
+        return render_template('index.html', email=session.get('email', ''), async_mode=socketio.async_mode)
 
 @flask_app.route('/api/v1/task_status', methods=['GET'])
 def task_status():
@@ -67,6 +80,26 @@ def send_email():
     response.headers["Content-Type"] = "application/json"
     return response
 
+@socketio.event
+def my_event(message):
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    emit('my_response',
+         {'data': message['data'], 'count': session['receive_count']})
+
+@socketio.event
+def server_ping():
+    emit('server_pong')
+
+@socketio.event
+def connect():
+    emit('my_response', {'data': 'Connected', 'count': 0})
+
+@socketio.on('disconnect')
+def test_disconnect():
+    print('Client disconnected', request.sid)
+
+
 if __name__ == '__main__':
-    # run application
-    flask_app.run(debug=True)
+    # run application using socket
+    #flask_app.run(debug=True)
+    socketio.run(flask_app,host='0.0.0.0', port=10001)

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>LWM Serivce Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='build/css/tailwind.css') }}"/>
+    <script src="https://cdn.jsdelivr.net/gh/alpine-collective/alpine-magic-helpers@0.5.x/dist/component.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.7.3/dist/alpine.min.js" defer></script>
+  </head>
+  <body>
+    <div x-data="setup()" x-init="$refs.loading.classList.add('hidden'); setColors(color);" :class="{ 'dark': isDark}">
+      <div class="flex h-screen antialiased text-gray-900 bg-gray-100 dark:bg-dark dark:text-light">
+        <!-- Loading screen -->
+        <div
+          x-ref="loading"
+          class="fixed inset-0 z-50 flex items-center justify-center text-2xl font-semibold text-white bg-primary-darker"
+        >
+          Loading.....
+        </div>
+        <div class="flex-1 h-full overflow-x-hidden overflow-y-auto">
+          <!-- Navbar -->
+          <header class="relative bg-white dark:bg-darker">
+            <div class="flex items-center justify-between p-2 border-b dark:border-primary-darker">
+              <!-- Brand -->
+              <a
+                href="index.html"
+                class="inline-block text-2xl font-bold tracking-wider text-primary-dark dark:text-light"
+              >
+                LWM Serivce Dashboard
+              </a>
+              <!-- Desktop Right buttons -->
+              <nav aria-label="Secondary" class="hidden space-x-2 md:flex md:items-center">
+               <span>Average latency: <b><span id="server-ping">0</span> ms</b></span> 
+    		   <img id="connectivity" srcset="{{ url_for('static', filename='build/images/disconnected.png')}} 3x" alt="Server Connection status" loading="lazy">
+                <!-- Toggle dark theme button -->
+                <button aria-hidden="true" class="relative focus:outline-none" x-cloak @click="toggleTheme">
+                  <div
+                    class="w-12 h-6 transition rounded-full outline-none bg-primary-100 dark:bg-primary-lighter"
+                  ></div>
+                  <div
+                    class="absolute top-0 left-0 inline-flex items-center justify-center w-6 h-6 transition-all duration-150 transform scale-110 rounded-full shadow-sm"
+                    :class="{ 'translate-x-0 -translate-y-px  bg-white text-primary-dark': !isDark, 'translate-x-6 text-primary-100 bg-primary-darker': isDark }"
+                  >
+                    <svg
+                      x-show="!isDark"
+                      class="w-4 h-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                      />
+                    </svg>
+                    <svg
+                      x-show="isDark"
+                      class="w-4 h-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                      />
+                    </svg>
+                  </div>
+                </button>
+             </nav>
+
+
+            </div>
+          </header>
+
+          <!-- Main content -->
+          <main>
+            <!-- Content -->
+            <div class="mt-2">
+              <!-- State cards -->
+              <div class="grid grid-cols-1 gap-8 p-4 lg:grid-cols-2 xl:grid-cols-4">
+                <!-- Total Messages card -->
+                <div class="flex items-center justify-between p-4 bg-white rounded-md dark:bg-darker">
+                  <div>
+                    <h6
+                      class="text-xs font-medium leading-none tracking-wider text-gray-500 dark:text-primary-light"
+                    >
+                      Total Messages
+                    </h6>
+                    <span class="text-xl font-semibold">0</span>
+                    <span class="inline-block px-2 py-px ml-2 text-xs text-green-500 bg-green-100 rounded-md">
+                      0%
+                    </span>
+                  </div>
+                  <div>
+                    <span>                        
+                      <img srcset="{{ url_for('static', filename='build/images/message.png')}} 3x" alt="Comments icon" loading="lazy">
+                    </span>
+                  </div>
+                </div>
+
+                <!-- E-mails card -->
+                <div class="flex items-center justify-between p-4 bg-white rounded-md dark:bg-darker">
+                  <div>
+                    <h6
+                      class="text-xs font-medium leading-none tracking-wider text-gray-500 dark:text-primary-light"
+                    >
+                      E-mail
+                    </h6>
+                    <span class="text-xl font-semibold">0</span>
+                    <span class="inline-block px-2 py-px ml-2 text-xs text-green-500 bg-green-100 rounded-md">
+                      0%
+                    </span>
+                  </div>
+                  <div>
+                    <span>
+                      <img srcset="{{ url_for('static', filename='build/images/email-open.png')}} 3x" alt="Comments icon" loading="lazy">
+                    </span>
+                  </div>
+                </div>
+
+                <!-- SMS card -->
+                <div class="flex items-center justify-between p-4 bg-white rounded-md dark:bg-darker">
+                  <div>
+                    <h6
+                      class="text-xs font-medium leading-none tracking-wider text-gray-500 dark:text-primary-light"
+                    >
+                      SMS
+                    </h6>
+                    <span class="text-xl font-semibold">0</span>
+                    <span class="inline-block px-2 py-px ml-2 text-xs text-green-500 bg-green-100 rounded-md">
+                      0%
+                    </span>
+                  </div>
+                  <div>
+                    <span>
+                      <img srcset="{{ url_for('static', filename='build/images/sms.png')}} 2x" alt="Comments icon" loading="lazy">
+                    </span>
+                  </div>
+                </div>
+
+                <!-- WhatsApp card -->
+                <div class="flex items-center justify-between p-4 bg-white rounded-md dark:bg-darker">
+				
+                  <div>
+                    <h6
+                      class="text-xs font-medium leading-none tracking-wider text-gray-500 dark:text-primary-light"
+                    >
+                      WhatsApp
+                    </h6>
+                    <span class="text-xl font-semibold">0</span>
+                    <span class="inline-block px-2 py-px ml-2 text-xs text-green-500 bg-green-100 rounded-md">
+                      0%
+                    </span>
+                  </div>
+                  <div>
+                    <span>
+					<img srcset="{{ url_for('static', filename='build/images/whatsapp.png')}} 2x" alt="Comments icon" loading="lazy">
+					</span>
+                  </div>
+                </div>
+              
+			  </div>
+
+              <!-- Charts -->
+              <div class="grid grid-cols-1 p-4 space-y-8 lg:gap-8 lg:space-y-0 lg:grid-cols-3">
+                <!-- Bar chart card -->
+                <div class="col-span-2 bg-white rounded-md dark:bg-darker" x-data="{ isOn: false }">
+                  <!-- Card header -->
+                  <div class="flex items-center justify-between p-2 border-b dark:border-primary">
+                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Bar Chart</h4>                    
+                  </div>
+                  <!-- Chart -->
+                  <div class="relative p-4 h-72">
+                    <canvas id="barChart"></canvas>
+                  </div>
+                </div>
+
+                <!-- Doughnut chart card -->
+                <div class="bg-white rounded-md dark:bg-darker" x-data="{ isOn: false }">
+                  <!-- Card header -->
+                  <div class="flex items-center justify-between p-2 border-b dark:border-primary">
+                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Doughnut Chart</h4>                    
+                  </div>
+                  <!-- Chart -->
+                  <div class="relative p-4 h-72">
+                    <canvas id="doughnutChart"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Two grid columns -->
+              <div class="grid grid-cols-1 p-4 space-y-8 lg:gap-8 lg:space-y-0 lg:grid-cols-3">
+                <!-- Active users chart -->
+                <div class="col-span-1 bg-white rounded-md dark:bg-darker">
+                  <!-- Card header -->
+                  <div class="p-4 border-b dark:border-primary">
+                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Active users right now</h4>
+                  </div>
+                  <p class="p-4">
+                    <span class="text-2xl font-medium text-gray-500 dark:text-light" id="usersCount">0</span>
+                    <span class="text-sm font-medium text-gray-500 dark:text-primary">Users</span>
+                  </p>
+                  <!-- Chart -->
+                  <div class="relative p-4">
+                    <canvas id="activeUsersChart"></canvas>
+                  </div>
+                </div>
+
+                <!-- Line chart card -->
+                <div class="col-span-2 bg-white rounded-md dark:bg-darker" x-data="{ isOn: false }">
+                  <!-- Card header -->
+                  <div class="flex items-center justify-between p-4 border-b dark:border-primary">
+                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Line Chart</h4>
+                  </div>
+                  <!-- Chart -->
+                  <div class="relative p-4 h-72">
+                    <canvas id="lineChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+
+          <!-- Main footer -->
+          <footer
+            class="flex items-center justify-between p-4 bg-white border-t dark:bg-darker dark:border-primary-darker"
+          >
+            <div>Saqib Ullah Siddiqui &copy; <a href="https://github.com/technetbytes" target="_blank" class="text-blue-500 hover:underline"
+                >Technetbytes</a> 2022</div>
+           
+          </footer>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
+    <!-- All javascript code in this project for now is just for demo DON'T RELY ON IT  -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='build/js/script.js')}}"></script>
+    <script>
+        const setup = () => {
+
+        const initSocketIO = () => {
+            // Connect to the Socket.IO server.
+            // The connection URL has the following format, relative to the current page:
+            //     http[s]://<domain>:<port>[/<namespace>]
+            var socket = io();
+            
+            console.log("socket init")
+            // Event handler for new connections.
+            // The callback function is invoked when a connection with the
+            // server is established.
+            socket.on('connect', function() {
+                socket.emit('my_event', {data: 'I\'m connected!'});
+            });
+
+            // Event handler for server sent data.
+            // The callback function is invoked whenever the server emits data
+            // to the client. The data is then displayed in the "Received"
+            // section of the page.
+            socket.on('my_response', function(msg, cb) {
+                //srcset="{{ url_for('static', filename='build/images/disconnected.png')}} 3x"
+                $('#connectivity').attr("srcset", "{{ url_for('static', filename='build/images/connected.png')}} 3x");
+                //$('#connectivity').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+                console.log('Received #' + msg.count + ': ' + msg.data);
+                if (cb)
+                    cb();
+            });
+
+            // Interval function that tests message latency by sending a "ping"
+            // message. The server then responds with a "pong" message and the
+            // round trip time is measured.
+            var ping_pong_times = [];
+            var start_time;
+            window.setInterval(function() {
+                start_time = (new Date).getTime();
+                $('#transport').text(socket.io.engine.transport.name);
+                socket.emit('server_ping');
+            }, 1000);
+
+                        // Handler for the "pong" message. When the pong is received, the
+            // time from the ping is stored, and the average of the last 30
+            // samples is average and displayed.
+            socket.on('server_pong', function() {
+                var latency = (new Date).getTime() - start_time;
+                ping_pong_times.push(latency);
+                ping_pong_times = ping_pong_times.slice(-30); // keep last 30 samples
+                var sum = 0;
+                for (var i = 0; i < ping_pong_times.length; i++)
+                    sum += ping_pong_times[i];
+                $('#server-ping').text(Math.round(10 * sum / ping_pong_times.length) / 10);
+            });
+        }
+
+        const getTheme = () => {
+          if (window.localStorage.getItem('dark')) {
+            return JSON.parse(window.localStorage.getItem('dark'))
+          }
+          return !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        }
+
+        const setTheme = (value) => {
+          window.localStorage.setItem('dark', value)
+        }
+
+        const getColor = () => {
+          if (window.localStorage.getItem('color')) {
+            return window.localStorage.getItem('color')
+          }
+          return 'cyan'
+        }
+
+        const setColors = (color) => {
+          const root = document.documentElement
+          root.style.setProperty('--color-primary', `var(--color-${color})`)
+          root.style.setProperty('--color-primary-50', `var(--color-${color}-50)`)
+          root.style.setProperty('--color-primary-100', `var(--color-${color}-100)`)
+          root.style.setProperty('--color-primary-light', `var(--color-${color}-light)`)
+          root.style.setProperty('--color-primary-lighter', `var(--color-${color}-lighter)`)
+          root.style.setProperty('--color-primary-dark', `var(--color-${color}-dark)`)
+          root.style.setProperty('--color-primary-darker', `var(--color-${color}-darker)`)
+          this.selectedColor = color
+          window.localStorage.setItem('color', color)
+          //
+        }
+        return {
+          socket : initSocketIO(),
+          loading: true,
+          isDark: getTheme(),
+          toggleTheme() {
+            this.isDark = !this.isDark
+            setTheme(this.isDark)
+          },
+          color: getColor(),
+          selectedColor: 'cyan',
+          setColors,
+        }
+      }
+    </script>
+  </body>
+</html>
