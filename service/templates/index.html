@@ -237,7 +237,7 @@
           <footer
             class="flex items-center justify-between p-4 bg-white border-t dark:bg-darker dark:border-primary-darker"
           >
-            <div>Saqib Ullah Siddiqui &copy; <a href="https://github.com/technetbytes" target="_blank" class="text-blue-500 hover:underline"
+            <div>Saqib Ullah Siddiqui &copy; <a href="https://github.com/technetbytes" class="text-blue-500 hover:underline"
                 >Technetbytes</a> 2022</div>
            
           </footer>
@@ -273,7 +273,7 @@
             // section of the page.
             socket.on('my_response', function(msg, cb) {
                 //srcset="{{ url_for('static', filename='build/images/disconnected.png')}} 3x"
-                $('#connectivity').attr("srcset", "{{ url_for('static', filename='build/images/connected.png')}} 3x");
+                $('#connectivity').attr("srcset", "{{ url_for('static', filename='data/images/connected.png')}} 3x");
                 //$('#connectivity').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
                 console.log('Received #' + msg.count + ': ' + msg.data);
                 if (cb)

@@ -2,8 +2,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from flask import request
 
-
-
 def build_message(email_info, from_address):
     message = MIMEMultipart("alternative")
     message["Subject"] = email_info["subject"]
