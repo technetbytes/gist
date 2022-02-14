@@ -8,7 +8,7 @@
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="{{ url_for('static', filename='build/css/tailwind.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='data/css/tailwind.css') }}"/>
     <script src="https://cdn.jsdelivr.net/gh/alpine-collective/alpine-magic-helpers@0.5.x/dist/component.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.7.3/dist/alpine.min.js" defer></script>
   </head>
@@ -36,7 +36,7 @@
               <!-- Desktop Right buttons -->
               <nav aria-label="Secondary" class="hidden space-x-2 md:flex md:items-center">
                <span>Average latency: <b><span id="server-ping">0</span> ms</b></span> 
-    		   <img id="connectivity" srcset="{{ url_for('static', filename='build/images/disconnected.png')}} 3x" alt="Server Connection status" loading="lazy">
+    		   <img id="connectivity" srcset="{{ url_for('static', filename='data/images/disconnected.png')}} 3x" alt="Server Connection status" loading="lazy">
                 <!-- Toggle dark theme button -->
                 <button aria-hidden="true" class="relative focus:outline-none" x-cloak @click="toggleTheme">
                   <div
@@ -105,7 +105,7 @@
                   </div>
                   <div>
                     <span>                        
-                      <img srcset="{{ url_for('static', filename='build/images/message.png')}} 3x" alt="Comments icon" loading="lazy">
+                      <img srcset="{{ url_for('static', filename='data/images/message.png')}} 3x" alt="Comments icon" loading="lazy">
                     </span>
                   </div>
                 </div>
@@ -125,7 +125,7 @@
                   </div>
                   <div>
                     <span>
-                      <img srcset="{{ url_for('static', filename='build/images/email-open.png')}} 3x" alt="Comments icon" loading="lazy">
+                      <img srcset="{{ url_for('static', filename='data/images/email-open.png')}} 3x" alt="Comments icon" loading="lazy">
                     </span>
                   </div>
                 </div>
@@ -145,7 +145,7 @@
                   </div>
                   <div>
                     <span>
-                      <img srcset="{{ url_for('static', filename='build/images/sms.png')}} 2x" alt="Comments icon" loading="lazy">
+                      <img srcset="{{ url_for('static', filename='data/images/sms.png')}} 2x" alt="Comments icon" loading="lazy">
                     </span>
                   </div>
                 </div>
@@ -166,7 +166,7 @@
                   </div>
                   <div>
                     <span>
-					<img srcset="{{ url_for('static', filename='build/images/whatsapp.png')}} 2x" alt="Comments icon" loading="lazy">
+					<img srcset="{{ url_for('static', filename='data/images/whatsapp.png')}} 2x" alt="Comments icon" loading="lazy">
 					</span>
                   </div>
                 </div>
@@ -249,7 +249,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
     <!-- All javascript code in this project for now is just for demo DON'T RELY ON IT  -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='build/js/script.js')}}"></script>
+    <script src="{{ url_for('static', filename='data/js/script.js')}}"></script>
     <script>
         const setup = () => {
 
