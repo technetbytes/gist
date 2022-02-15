@@ -15,4 +15,7 @@ def get_celery(app,config):
                 return self.run(*args, **kwargs)
 
     celery.Task = ContextTask
+    
+    
+    celery.conf.task_send_sent_event=True
     return celery
