@@ -11,3 +11,5 @@ email:
     sender: saqibullah@markematics.com.pk
 others:
   secret_key : XrayYankeeZulu
+redis:
+    task_key : task_status_data_gist

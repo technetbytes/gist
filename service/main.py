@@ -14,6 +14,12 @@ from celery.result import AsyncResult
 import argparse
 from core.celery_events_handler import CeleryEventsHandler
 
+
+
+
+
+
+
 # Set this variable to "threading", "eventlet" or "gevent" to test the
 # different async modes, or leave it set to None for the application to choose
 # the best option based on installed packages.
@@ -91,7 +97,7 @@ def send_email():
     task = send_async_email.delay(email_data)
 
     #Store task info in redis-cache
-
+    
     response = make_response(
                 jsonify(
                      message="E-mail sent.",
@@ -129,4 +135,19 @@ if __name__ == '__main__':
     #init celery logger
     init_celery_logger(celerymq)
     #init server socket listener
-    socketio.run(flask_app,host='0.0.0.0', port=10001)
+    #socketio.run(flask_app,host='0.0.0.0', port=10001)
+
+    from task_store.status import Status
+    from task_store.task import Task
+    import json
+    import datetime
+
+    tk1  = Status("email_start_1",datetime.datetime.now(), datetime.datetime.now(), "Passed")
+    tk2  = Status("email_start_1",datetime.datetime.now(), datetime.datetime.now(), "Passed")
+
+
+    image_bboxes = [tk1, tk2]
+    #print(image_bboxes)
+    image_label_col = Task("email","id....",image_bboxes,"done")
+    print(image_label_col)
+    #print(json.dumps(image_label_col, default=default))
