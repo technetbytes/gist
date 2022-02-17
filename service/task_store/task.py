@@ -2,7 +2,7 @@ import json
 from task_store.converter import datetime_converter
 
 class Task:
-    def __init__(self, task_name, task_id, conditions, message):
+    def __init__(self, task_name, task_id, message, conditions):
         self.task_name = task_name
         self.task_id = task_id
         self.conditions = conditions
