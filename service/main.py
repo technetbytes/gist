@@ -1,8 +1,10 @@
+from asyncio import constants
 import redis
 import pyfiglet
 from threading import Lock
 from pyexpat.errors import messages
 from flask_socketio import SocketIO, emit, disconnect
+from utilities.constant import *
 from flask_session import Session
 from flask import Flask, request, jsonify, render_template, session, flash, redirect, url_for, make_response
 from core.celery_core import get_celery
@@ -13,6 +15,7 @@ from utilities.email import build_message, generate_email_body
 from celery.result import AsyncResult
 import argparse
 from core.celery_events_handler import CeleryEventsHandler
+from task_store.task_manager import TaskManager
 
 # Set this variable to "threading", "eventlet" or "gevent" to test the
 # different async modes, or leave it set to None for the application to choose
@@ -53,14 +56,13 @@ def init_celery_logger(app):
 @celerymq.task(base=CeleryApiTask,bind=True)
 def send_async_email(self, email_info):
     print("Start sending email ...")
-    pass
     # Create a secure SSL context
     context = get_context()
     try:
-        message = build_message(email_info, flask_app.config['SEND_INFO'])
-        smtp_server = init_smtp_server(config=Config)
+        # message = build_message(email_info, flask_app.config['SEND_INFO'])
+        # smtp_server = init_smtp_server()
         print("message sent ....")
-        smtp_server.send_message(message)
+        # smtp_server.send_message(message)
     except Exception as exc:
         # Print any error messages to stdout
         print("error :- ",exc)
@@ -85,7 +87,9 @@ def send_email():
     email_data = generate_email_body(request)
     #send async email
     task = send_async_email.delay(email_data)
-    #Store task info in redis-cache    
+    #Store task info in redis-cache   
+    TaskManager.create_new_task(MESSAGE_TYPE_EMAIL, task)
+    
     response = make_response(
                 jsonify(
                      message="E-mail sent.",
@@ -120,7 +124,80 @@ if __name__ == '__main__':
     # run application using socket
     result = pyfiglet.figlet_format("LWMQ")
     print(result)
-    #init celery logger
+    ##init celery logger
     init_celery_logger(celerymq)
-    #init server socket listener
+    ##init server socket listener
     socketio.run(flask_app,host='0.0.0.0', port=10001)
+    
+    from task_store.status import Status
+    from task_store.task import Task, Tasks
+    import json
+    import datetime
+    from task_store.task_manager import Welcome3, Welcome3Condition, ConditionCondition
+
+    #TaskManager.create_new_task("EMAIL","afaf")
+    # tk1  = Status("email_start_1",datetime.datetime.now(), datetime.datetime.now(), "Passed")
+    # tk2  = Status("email_start_1",datetime.datetime.now(), datetime.datetime.now(), "Passed")
+    # conditions = [tk1, tk2]
+    # #print(conditions)
+    # image_label_col = Task("email","id....", "done", conditions)
+    # print(image_label_col)
+    # #print(json.dumps(image_label_col, default=default))
+
+    # _tasks = []
+
+    # conditions = []
+    # status_1 = ConditionCondition("START","DATE_TIME","Task is Started")
+    # status_2 = ConditionCondition("DONE","DATE_TIME","Task is Done")
+    # conditions.append(status_1)
+    # conditions.append(status_2)
+    # new_task = Welcome3Condition("type", "fafa", "init", conditions)
+    # _tasks.append(new_task)
+
+    # conditions_1 = []
+    # status_3 = ConditionCondition("START","DATE_TIME_2","Task is Started")
+    # status_4 = ConditionCondition("DONE","DATE_TIME_2","Task is Done")
+    # conditions_1.append(status_3)
+    # conditions_1.append(status_4)
+    # new_task2 = Welcome3Condition("type2", "faf2", "init2", conditions_1)
+    # _tasks.append(new_task)
+
+    # tasks = Welcome3(_tasks)
+    # print(json.dumps(tasks))
+
+    # after this my original code
+
+    # conditions = []
+    # status_1 = Status("START","DATE_TIME","Task is Started")
+    # status_2 = Status("DONE","DATE_TIME","Task is Done")
+    # conditions.append(status_1)
+    # conditions.append(status_2)
+    # _tasks = []
+    # new_task = Task("type", "fafa", "init", conditions)
+    # _tasks.append(new_task)
+
+    # conditions_1 = []
+    # status_3 = Status("START","DATE_TIME_2","Task is Started")
+    # status_4 = Status("DONE","DATE_TIME_2","Task is Done")
+    # conditions_1.append(status_3)
+    # conditions_1.append(status_4)
+    # new_task2 = Task("type2", "faf2", "init2", conditions_1)
+    # _tasks.append(new_task2)
+    # tasks = Tasks(_tasks)
+    # #print("---->",tasks.to_json())
+    # s = TaskManager.testing_create_new_task(tasks.to_json())
+    # #print("@@@@@@@",type(s))
+    # js =json.loads(json.dumps(s))
+
+
+
+    # print("======***====",type(js['conditions']))
+    # print("======INITSELF====",js['conditions'])
+    # print("===========",type(js['conditions'][0]))
+    # print("======INITSELF====",js['conditions'])
+    # print(len(js['conditions']))
+    # x = json.loads(js['conditions'][1])
+    # print(len(x))
+    # print(x)
+    #print(json.loads(json.dumps(js['conditions']))[0])
+    #print("",TaskManager.function_2(js['conditions'],"fafa"))

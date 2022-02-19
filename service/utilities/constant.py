@@ -1,0 +1,4 @@
+#initialization of constants
+MESSAGE_TYPE_EMAIL = "EMAIL"
+MESSAGE_TYPE_SMS = "SMS"
+MESSAGE_TYPE_WHATSAPP = "WHATSAPP"

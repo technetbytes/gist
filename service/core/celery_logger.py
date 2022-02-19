@@ -1,7 +1,8 @@
 from datetime import datetime as dt
+from task_store.task_manager import TaskManager
 
 class CeleryLogger:
-    def log_task_status_change(self, task, event):
+    def log_task_status_change(self, task, event):        
         print('[{}] {} {} (STATE={}, UUID={})'.format(
             self._to_datetime(task.timestamp),
             event['type'].upper(),
@@ -9,6 +10,11 @@ class CeleryLogger:
             task.state.upper(),
             task.uuid
         ))
+        TaskManager().update_task_management(
+            event['type'].upper(),
+            task.name,
+            task.state.upper(),
+            task.uuid)
 
     def log_event_details(self, event):
         print('EVENT DETAILS: {}'.format(event))

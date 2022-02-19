@@ -2,8 +2,7 @@ import json
 from task_store.converter import datetime_converter
 
 class Status:
-    def __init__(self, status_name, status_start_datetime, 
-                status_end_datetime, message):
+    def __init__(self, status_name, status_start_datetime, message):
         self.status_name = status_name
         self.status_datetime = status_start_datetime
         self.message = message
