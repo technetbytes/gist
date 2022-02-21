@@ -6,7 +6,7 @@ def messaging():
     print("sending email ...")
     json_email_request()
   
-schedule.every(10).seconds.do(messaging)
+schedule.every(5).seconds.do(messaging)
 
 def start_scheduler():
     while True:

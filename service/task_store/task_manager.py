@@ -1,9 +1,12 @@
-from task_store.task import Task, Tasks
+from task_store.task import Task
+from task_store.tasks import Tasks
 from task_store.status import Status
 import redis
 import datetime
 from config.setting import Config
 import json
+from utilities.json_extension import check_update_list
+from task_store.converter import datetime_converter
 
 class TaskManager:
 
@@ -52,22 +55,25 @@ class TaskManager:
 
     @staticmethod
     def __update_json_object(tasks_obj_as_dict, replace_obj):
-        print("****",replace_obj)
-        print("<<<<<++++++++",tasks_obj_as_dict)
         for task in tasks_obj_as_dict:
-            print("++++--------",type(task))
             if json.loads(task)['task_id'] == replace_obj['task_id']:
                 task = json.dumps(replace_obj)
-                print(" ------->   -----> break", type(replace_obj))
                 break
-        print("+++++++>>>>>",tasks_obj_as_dict)
         return tasks_obj_as_dict
-        #print("++++++++++++",s)
-        # for dict in json_obj:
-        #     x = json.loads(dict)
-        #     if x['task_id'] == replace_obj['task_id']:
-        #        x = replace_obj 
-        # return json_obj
+
+    @staticmethod
+    def update_task_management_ext(event, name, status, id):
+        tasks_obj_as_dict = TaskManager.get_task_management()        
+        if tasks_obj_as_dict is not None:
+            #Iterating all the fields of the JSON
+            for element in tasks_obj_as_dict:
+                #If Json Field value is a list
+                if (isinstance(tasks_obj_as_dict[element], list)):
+                    # add new status in the task_conditions list
+                    new_status = Status(id, name, datetime.datetime.now(), status)
+                    check_update_list(tasks_obj_as_dict[element], element, new_status)
+            tasks = Tasks(tasks_obj_as_dict['conditions'])
+            TaskManager._redis.set(TaskManager._task_management_key, json.dumps(tasks.to_json()))
 
     @staticmethod
     def update_task_management(event, name, status, id):
@@ -81,23 +87,10 @@ class TaskManager:
                     # get task status list
                     current_task_conditions = current_task['conditions']
                     # add new status in the task_conditions list
-                    new_status = Status(name, datetime.datetime.now(), status)
+                    new_status = Status(id, name, datetime.datetime.now(), status)
                     current_task_conditions.append(new_status)
                     # update object
                     update_json_obj = TaskManager.__update_json_object(cache_data['conditions'], current_task)
-
-
-                    #print("current object ====>", current_task)
-                    #print("current_task_conditions ******", current_task_conditions)
-                    #print("return object as updated <-------->", update_json_obj)
-                    #print("actual object --->", cache_data['conditions'])
-                else:
-                    print("current_task is none")
-            else:
-                print(" ------ cache_data is None -----")
-        else:
-            print(" ------ tasks_obj_as_dict is None -----")
-
 
     @staticmethod
     def create_new_task(message_type, task):

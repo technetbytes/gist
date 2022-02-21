@@ -93,7 +93,7 @@ def send_email():
     response = make_response(
                 jsonify(
                      message="E-mail sent.",
-                    category="EMAIL",
+                    category=MESSAGE_TYPE_EMAIL,
                     status=201,
                     data=email_data),
                 201,
@@ -102,10 +102,19 @@ def send_email():
     return response
 
 @socketio.event
-def my_event(message):
+def connecting_service(message):
     session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my_response',
+    emit('connected_service',
          {'data': message['data'], 'count': session['receive_count']})
+
+@socketio.event
+def messaging_data(message):
+    messages = TaskManager.get_task_management()
+    print("------  * ** *------",messages)
+    if messages is not None:
+        emit('received_data',{'data': messages, 'state':'LOAD'})
+    else:
+        emit('received_data',{'data': 'None', 'state':'ERROR'})
 
 @socketio.event
 def server_ping():
@@ -113,7 +122,7 @@ def server_ping():
 
 @socketio.event
 def connect():
-    emit('my_response', {'data': 'Connected', 'count': 0})
+    emit('service_init', {'data': 'Connected .... init', 'count': 0})
 
 @socketio.on('disconnect')
 def test_disconnect():
@@ -128,76 +137,3 @@ if __name__ == '__main__':
     init_celery_logger(celerymq)
     ##init server socket listener
     socketio.run(flask_app,host='0.0.0.0', port=10001)
-    
-    from task_store.status import Status
-    from task_store.task import Task, Tasks
-    import json
-    import datetime
-    from task_store.task_manager import Welcome3, Welcome3Condition, ConditionCondition
-
-    #TaskManager.create_new_task("EMAIL","afaf")
-    # tk1  = Status("email_start_1",datetime.datetime.now(), datetime.datetime.now(), "Passed")
-    # tk2  = Status("email_start_1",datetime.datetime.now(), datetime.datetime.now(), "Passed")
-    # conditions = [tk1, tk2]
-    # #print(conditions)
-    # image_label_col = Task("email","id....", "done", conditions)
-    # print(image_label_col)
-    # #print(json.dumps(image_label_col, default=default))
-
-    # _tasks = []
-
-    # conditions = []
-    # status_1 = ConditionCondition("START","DATE_TIME","Task is Started")
-    # status_2 = ConditionCondition("DONE","DATE_TIME","Task is Done")
-    # conditions.append(status_1)
-    # conditions.append(status_2)
-    # new_task = Welcome3Condition("type", "fafa", "init", conditions)
-    # _tasks.append(new_task)
-
-    # conditions_1 = []
-    # status_3 = ConditionCondition("START","DATE_TIME_2","Task is Started")
-    # status_4 = ConditionCondition("DONE","DATE_TIME_2","Task is Done")
-    # conditions_1.append(status_3)
-    # conditions_1.append(status_4)
-    # new_task2 = Welcome3Condition("type2", "faf2", "init2", conditions_1)
-    # _tasks.append(new_task)
-
-    # tasks = Welcome3(_tasks)
-    # print(json.dumps(tasks))
-
-    # after this my original code
-
-    # conditions = []
-    # status_1 = Status("START","DATE_TIME","Task is Started")
-    # status_2 = Status("DONE","DATE_TIME","Task is Done")
-    # conditions.append(status_1)
-    # conditions.append(status_2)
-    # _tasks = []
-    # new_task = Task("type", "fafa", "init", conditions)
-    # _tasks.append(new_task)
-
-    # conditions_1 = []
-    # status_3 = Status("START","DATE_TIME_2","Task is Started")
-    # status_4 = Status("DONE","DATE_TIME_2","Task is Done")
-    # conditions_1.append(status_3)
-    # conditions_1.append(status_4)
-    # new_task2 = Task("type2", "faf2", "init2", conditions_1)
-    # _tasks.append(new_task2)
-    # tasks = Tasks(_tasks)
-    # #print("---->",tasks.to_json())
-    # s = TaskManager.testing_create_new_task(tasks.to_json())
-    # #print("@@@@@@@",type(s))
-    # js =json.loads(json.dumps(s))
-
-
-
-    # print("======***====",type(js['conditions']))
-    # print("======INITSELF====",js['conditions'])
-    # print("===========",type(js['conditions'][0]))
-    # print("======INITSELF====",js['conditions'])
-    # print(len(js['conditions']))
-    # x = json.loads(js['conditions'][1])
-    # print(len(x))
-    # print(x)
-    #print(json.loads(json.dumps(js['conditions']))[0])
-    #print("",TaskManager.function_2(js['conditions'],"fafa"))

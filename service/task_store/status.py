@@ -2,13 +2,15 @@ import json
 from task_store.converter import datetime_converter
 
 class Status:
-    def __init__(self, status_name, status_start_datetime, message):
+    def __init__(self, id, status_name, status_start_datetime, message):
+        self.id = id
         self.status_name = status_name
         self.status_datetime = status_start_datetime
         self.message = message
     
     def __iter__(self):
         yield from {
+            "id": self.id,
             "status_name": self.status_name,
             "status_datetime": self.status_datetime,
             "message": self.message
@@ -28,6 +30,7 @@ class Status:
     
     @staticmethod
     def from_json(json_dct):
-      return Status(json_dct['status_name'],
+      return Status(json_dct['id'],
+                    json_dct['status_name'],
                     json_dct['status_datetime'],
                     json_dct['message'])

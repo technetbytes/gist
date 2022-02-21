@@ -10,7 +10,7 @@ class CeleryLogger:
             task.state.upper(),
             task.uuid
         ))
-        TaskManager().update_task_management(
+        TaskManager().update_task_management_ext(
             event['type'].upper(),
             task.name,
             task.state.upper(),

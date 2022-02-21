@@ -260,23 +260,50 @@
             var socket = io();
             
             console.log("socket init")
+
+            socket.on('service_init',function(){
+              console.log("Establishing connection ...");
+            });
+
             // Event handler for new connections.
             // The callback function is invoked when a connection with the
             // server is established.
             socket.on('connect', function() {
-                socket.emit('my_event', {data: 'I\'m connected!'});
+                socket.emit('connecting_service', {data: 'I\'m connected!'});
             });
 
             // Event handler for server sent data.
             // The callback function is invoked whenever the server emits data
             // to the client. The data is then displayed in the "Received"
             // section of the page.
-            socket.on('my_response', function(msg, cb) {
+            socket.on('connected_service', function(msg, cb) {
                 //srcset="{{ url_for('static', filename='build/images/disconnected.png')}} 3x"
                 $('#connectivity').attr("srcset", "{{ url_for('static', filename='data/images/connected.png')}} 3x");
                 //$('#connectivity').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
                 console.log('Received #' + msg.count + ': ' + msg.data);
+                getting_service_data();
                 if (cb)
+                    cb();
+            });
+
+            //init messaging data
+            function getting_service_data(){
+              console.log('getting_service_data ...');
+              socket.emit('messaging_data', {data: 'FETCH'});
+            }
+
+            //Event handler for messaging sent data.
+            socket.on('received_data', function(msg, cb) {
+              if(msg.data != 'None' && msg.state != 'ERROR'){
+                console.log(msg.data.conditions);
+                for(each_index in msg.data.conditions){
+                    console.log(msg.data.conditions[each_index])
+                }
+              }
+              else{
+                console.log(msg);
+              }
+              if (cb)
                     cb();
             });
 
