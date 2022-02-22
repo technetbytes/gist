@@ -110,9 +110,11 @@ def connecting_service(message):
 @socketio.event
 def messaging_data(message):
     messages = TaskManager.get_task_management()
-    print("------  * ** *------",messages)
+    # print("------  ****** --->",type(messages))   
+    # print("------  * ** *------",str(messages).replace("\"",""))
+    x = str(messages).replace("\"","")
     if messages is not None:
-        emit('received_data',{'data': messages, 'state':'LOAD'})
+        emit('received_data',{'data': x, 'state':'LOAD'})
     else:
         emit('received_data',{'data': 'None', 'state':'ERROR'})
 

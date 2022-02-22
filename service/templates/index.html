@@ -249,6 +249,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
     <!-- All javascript code in this project for now is just for demo DON'T RELY ON IT  -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
     <script src="{{ url_for('static', filename='data/js/script.js')}}"></script>
     <script>
         const setup = () => {
@@ -286,18 +287,28 @@
                     cb();
             });
 
-            //init messaging data
-            function getting_service_data(){
-              console.log('getting_service_data ...');
-              socket.emit('messaging_data', {data: 'FETCH'});
-            }
-
             //Event handler for messaging sent data.
             socket.on('received_data', function(msg, cb) {
-              if(msg.data != 'None' && msg.state != 'ERROR'){
-                console.log(msg.data.conditions);
-                for(each_index in msg.data.conditions){
-                    console.log(msg.data.conditions[each_index])
+              if(msg.data != 'None' && msg.state != 'ERROR'){                
+                window.localStorage.setItem('received_messages', msg.data.conditions)
+                console.log((msg));
+                msg = msg.data.replaceAll("\'","\"")
+                console.log("++++++");
+                msg = msg.replaceAll("\\","")
+                console.log((msg));
+                console.log(JSON.parse(msg));
+                console.log(Array.isArray(msg.conditions))
+                //console.log(msgtype_counts(msg.data))
+                for(each_index in msg.conditions){
+                    //x = JSON.stringify(msg.data.conditions[each_index])
+                    x = msg.data.conditions[each_index]
+                    x= x.replaceAll("\'","\"")
+                    x = JSON.parse(x)
+                    console.log("-----")
+                    console.log(x['task_name'])
+                    //pars = JSON.parse(JSON.stringify(x))
+                    //console.log(pars['task_name'])
+                    //console.log(msg.data.conditions[each_index])
                 }
               }
               else{
@@ -318,7 +329,7 @@
                 socket.emit('server_ping');
             }, 1000);
 
-                        // Handler for the "pong" message. When the pong is received, the
+            // Handler for the "pong" message. When the pong is received, the
             // time from the ping is stored, and the average of the last 30
             // samples is average and displayed.
             socket.on('server_pong', function() {
@@ -329,7 +340,58 @@
                 for (var i = 0; i < ping_pong_times.length; i++)
                     sum += ping_pong_times[i];
                 $('#server-ping').text(Math.round(10 * sum / ping_pong_times.length) / 10);
+                update_ui();
             });
+
+            //init messaging data
+            function getting_service_data(){
+              console.log('getting_service_data ...');
+              socket.emit('messaging_data', {data: 'FETCH'});
+            }
+
+            //init messaging data
+            function update_ui(){
+              messages_data = window.localStorage.getItem('received_messages')
+              //console.log(messages_data.data)
+              //console.log(msgtype_counts(messages_data))
+            }
+
+            function msgtype_counts(messages_data){
+              chart_data = {
+                "labels" : [],
+                "data" : []
+              }
+              if(messages_data != 'None'){
+                _data = groupby_data(messages_data)
+                // Object.keys(_data).forEach((x,d) =>{
+                //   chart_data.labels.push(x)
+	              //   chart_data.data.push(result[x].length)
+                // });
+              }
+              return chart_data;
+            }
+
+            function groupby_data(data){
+              console.log("-----",Array.isArray(data.conditions))
+              const x = data.conditions.reduce((group, task) => {
+                //console.log("======",group,task);
+                group[task.task_name] = group[task.task_name] ?? [];
+                group[task.task_name].push(task);
+                return group;
+              },{})
+              
+              console.log(x);
+
+
+              // console.log("-----",Array.isArray(data.conditions))
+              // result = data.conditions.reduce(function (r, a) {
+              //     console.log(r,a)
+              //     r[a.task_name] = r[a.task_name] || [];
+              //     r[a.task_name].push(a);
+              //     return r;
+              // }, Object.create(null));
+              // return result
+            }
         }
 
         const getTheme = () => {
