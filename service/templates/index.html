@@ -35,7 +35,7 @@
               </a>
               <!-- Desktop Right buttons -->
               <nav aria-label="Secondary" class="hidden space-x-2 md:flex md:items-center">
-               <span>Average latency: <b><span id="server-ping">0</span> ms</b></span> 
+               <span>Average latency: <b><span id="server-ping">0</span> ms</b> <span class="dynamicsparkline">Loading..</span></span> 
     		   <img id="connectivity" srcset="{{ url_for('static', filename='data/images/disconnected.png')}} 3x" alt="Server Connection status" loading="lazy">
                 <!-- Toggle dark theme button -->
                 <button aria-hidden="true" class="relative focus:outline-none" x-cloak @click="toggleTheme">
@@ -98,9 +98,12 @@
                     >
                       Total Messages
                     </h6>
-                    <span class="text-xl font-semibold">0</span>
+                    <span class="text-xl font-semibold" id="total_msg">0</span>
                     <span class="inline-block px-2 py-px ml-2 text-xs text-green-500 bg-green-100 rounded-md">
-                      0%
+                      0
+                    </span>
+                    <span class="inline-block px-2 py-px ml-2 text-xs text-green-500 bg-green-100 rounded-md">
+                      0
                     </span>
                   </div>
                   <div>
@@ -116,11 +119,14 @@
                     <h6
                       class="text-xs font-medium leading-none tracking-wider text-gray-500 dark:text-primary-light"
                     >
-                      E-mail
+                    Total E-mail
                     </h6>
-                    <span class="text-xl font-semibold">0</span>
+                    <span class="text-xl font-semibold" id="total_email">0</span>
                     <span class="inline-block px-2 py-px ml-2 text-xs text-green-500 bg-green-100 rounded-md">
-                      0%
+                      0
+                    </span>
+                    <span class="inline-block px-2 py-px ml-2 text-xs text-green-500 bg-green-100 rounded-md">
+                      0
                     </span>
                   </div>
                   <div>
@@ -136,11 +142,14 @@
                     <h6
                       class="text-xs font-medium leading-none tracking-wider text-gray-500 dark:text-primary-light"
                     >
-                      SMS
+                    Total SMS
                     </h6>
-                    <span class="text-xl font-semibold">0</span>
+                    <span class="text-xl font-semibold" id="total_sms">0</span>
                     <span class="inline-block px-2 py-px ml-2 text-xs text-green-500 bg-green-100 rounded-md">
-                      0%
+                      0
+                    </span>
+                    <span class="inline-block px-2 py-px ml-2 text-xs text-green-500 bg-green-100 rounded-md">
+                      0
                     </span>
                   </div>
                   <div>
@@ -157,11 +166,14 @@
                     <h6
                       class="text-xs font-medium leading-none tracking-wider text-gray-500 dark:text-primary-light"
                     >
-                      WhatsApp
+                    Total WhatsApp
                     </h6>
-                    <span class="text-xl font-semibold">0</span>
+                    <span class="text-xl font-semibold" id="total_whatsapp">0</span>
                     <span class="inline-block px-2 py-px ml-2 text-xs text-green-500 bg-green-100 rounded-md">
-                      0%
+                      0
+                    </span>
+                    <span class="inline-block px-2 py-px ml-2 text-xs text-green-500 bg-green-100 rounded-md">
+                      0
                     </span>
                   </div>
                   <div>
@@ -179,7 +191,7 @@
                 <div class="col-span-2 bg-white rounded-md dark:bg-darker" x-data="{ isOn: false }">
                   <!-- Card header -->
                   <div class="flex items-center justify-between p-2 border-b dark:border-primary">
-                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Bar Chart</h4>                    
+                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Messages Arrival</h4>                    
                   </div>
                   <!-- Chart -->
                   <div class="relative p-4 h-72">
@@ -191,7 +203,7 @@
                 <div class="bg-white rounded-md dark:bg-darker" x-data="{ isOn: false }">
                   <!-- Card header -->
                   <div class="flex items-center justify-between p-2 border-b dark:border-primary">
-                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Doughnut Chart</h4>                    
+                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Messages Chart</h4>                    
                   </div>
                   <!-- Chart -->
                   <div class="relative p-4 h-72">
@@ -217,18 +229,6 @@
                     <canvas id="activeUsersChart"></canvas>
                   </div>
                 </div>
-
-                <!-- Line chart card -->
-                <div class="col-span-2 bg-white rounded-md dark:bg-darker" x-data="{ isOn: false }">
-                  <!-- Card header -->
-                  <div class="flex items-center justify-between p-4 border-b dark:border-primary">
-                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Line Chart</h4>
-                  </div>
-                  <!-- Chart -->
-                  <div class="relative p-4 h-72">
-                    <canvas id="lineChart"></canvas>
-                  </div>
-                </div>
               </div>
             </div>
           </main>
@@ -247,9 +247,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
-    <!-- All javascript code in this project for now is just for demo DON'T RELY ON IT  -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
     <script src="{{ url_for('static', filename='data/js/script.js')}}"></script>
     <script>
         const setup = () => {
@@ -289,27 +288,27 @@
 
             //Event handler for messaging sent data.
             socket.on('received_data', function(msg, cb) {
-              if(msg.data != 'None' && msg.state != 'ERROR'){                
-                window.localStorage.setItem('received_messages', msg.data.conditions)
-                console.log((msg));
-                msg = msg.data.replaceAll("\'","\"")
-                console.log("++++++");
-                msg = msg.replaceAll("\\","")
-                console.log((msg));
-                console.log(JSON.parse(msg));
-                console.log(Array.isArray(msg.conditions))
-                //console.log(msgtype_counts(msg.data))
-                for(each_index in msg.conditions){
-                    //x = JSON.stringify(msg.data.conditions[each_index])
-                    x = msg.data.conditions[each_index]
-                    x= x.replaceAll("\'","\"")
-                    x = JSON.parse(x)
-                    console.log("-----")
-                    console.log(x['task_name'])
-                    //pars = JSON.parse(JSON.stringify(x))
-                    //console.log(pars['task_name'])
-                    //console.log(msg.data.conditions[each_index])
-                }
+              if(msg.data != 'None' && msg.state != 'ERROR'){           
+                window.localStorage.setItem('received_messages', JSON.stringify(msg.data))
+                // console.log((msg));
+                // msg = msg.data.replaceAll("\'","\"")
+                // console.log("++++++");
+                // msg = msg.replaceAll("\\","")
+                // console.log((msg));
+                // console.log(JSON.parse(msg));
+                // console.log(Array.isArray(msg.conditions))
+                console.log(msgtype_counts(msg.data))
+                // for(each_index in msg.conditions){
+                //     //x = JSON.stringify(msg.data.conditions[each_index])
+                //     x = msg.data.conditions[each_index]
+                //     x= x.replaceAll("\'","\"")
+                //     x = JSON.parse(x)
+                //     console.log("-----")
+                //     console.log(x['task_name'])
+                //     //pars = JSON.parse(JSON.stringify(x))
+                //     //console.log(pars['task_name'])
+                //     //console.log(msg.data.conditions[each_index])
+                // }
               }
               else{
                 console.log(msg);
@@ -339,7 +338,9 @@
                 var sum = 0;
                 for (var i = 0; i < ping_pong_times.length; i++)
                     sum += ping_pong_times[i];
-                $('#server-ping').text(Math.round(10 * sum / ping_pong_times.length) / 10);
+                let serverLatency = Math.round(10 * sum / ping_pong_times.length) / 10
+                $('#server-ping').text(serverLatency);
+                latencydata(serverLatency);
                 update_ui();
             });
 
@@ -352,8 +353,9 @@
             //init messaging data
             function update_ui(){
               messages_data = window.localStorage.getItem('received_messages')
-              //console.log(messages_data.data)
-              //console.log(msgtype_counts(messages_data))
+              //console.log(messages_data)
+              data = msgtype_counts(JSON.parse(messages_data))
+              build_widgets(data)
             }
 
             function msgtype_counts(messages_data){
@@ -363,34 +365,21 @@
               }
               if(messages_data != 'None'){
                 _data = groupby_data(messages_data)
-                // Object.keys(_data).forEach((x,d) =>{
-                //   chart_data.labels.push(x)
-	              //   chart_data.data.push(result[x].length)
-                // });
+                Object.keys(_data).forEach((x,d) =>{
+                  chart_data.labels.push(x)
+	                chart_data.data.push(_data[x].length)
+                });
               }
               return chart_data;
             }
 
             function groupby_data(data){
-              console.log("-----",Array.isArray(data.conditions))
               const x = data.conditions.reduce((group, task) => {
-                //console.log("======",group,task);
                 group[task.task_name] = group[task.task_name] ?? [];
                 group[task.task_name].push(task);
                 return group;
               },{})
-              
-              console.log(x);
-
-
-              // console.log("-----",Array.isArray(data.conditions))
-              // result = data.conditions.reduce(function (r, a) {
-              //     console.log(r,a)
-              //     r[a.task_name] = r[a.task_name] || [];
-              //     r[a.task_name].push(a);
-              //     return r;
-              // }, Object.create(null));
-              // return result
+              return x
             }
         }
 

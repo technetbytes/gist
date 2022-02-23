@@ -112,9 +112,9 @@ def messaging_data(message):
     messages = TaskManager.get_task_management()
     # print("------  ****** --->",type(messages))   
     # print("------  * ** *------",str(messages).replace("\"",""))
-    x = str(messages).replace("\"","")
+    #x = str(messages).replace("\"","")
     if messages is not None:
-        emit('received_data',{'data': x, 'state':'LOAD'})
+        emit('received_data',{'data': messages, 'state':'LOAD'})
     else:
         emit('received_data',{'data': 'None', 'state':'ERROR'})
 
