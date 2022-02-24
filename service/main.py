@@ -88,8 +88,7 @@ def send_email():
     #send async email
     task = send_async_email.delay(email_data)
     #Store task info in redis-cache   
-    TaskManager.create_new_task(MESSAGE_TYPE_EMAIL, task)
-    
+    TaskManager.create_new_task(MESSAGE_TYPE_EMAIL, task)    
     response = make_response(
                 jsonify(
                      message="E-mail sent.",
@@ -110,9 +109,6 @@ def connecting_service(message):
 @socketio.event
 def messaging_data(message):
     messages = TaskManager.get_task_management()
-    # print("------  ****** --->",type(messages))   
-    # print("------  * ** *------",str(messages).replace("\"",""))
-    #x = str(messages).replace("\"","")
     if messages is not None:
         emit('received_data',{'data': messages, 'state':'LOAD'})
     else:
