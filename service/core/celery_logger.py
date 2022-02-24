@@ -11,9 +11,9 @@ class CeleryLogger:
             task.uuid
         ))
         TaskManager().update_task_management_ext(
-            event['type'].upper(),
-            task.name,
+            event['type'].upper(),            
             task.state.upper(),
+            task.name,
             task.uuid)
 
     def log_event_details(self, event):

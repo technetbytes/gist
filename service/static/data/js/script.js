@@ -87,35 +87,45 @@ function build_widgets(data, complete_messagesData){
 function buildGridData(complete_messagesData){
   _data = [];
   if(complete_messagesData != undefined){
+    minutes = 0;
+    times = []
+    calculatedTime = -1
+    startDT = ""
+    endDT = ""
     complete_messagesData.conditions.forEach((element) => {
-
-        minutes = 0;
-        times = []
-        startDT = ""
-        endDT = ""
         element.conditions.forEach((eachStatus)=> {
           console.log(eachStatus)
-          if(eachStatus.status_name === "PENDING"){
+          if(eachStatus.status_name == "PENDING"){
             startDT = eachStatus.status_datetime
             console.log("---->",startDT)
             times.push(eachStatus.status_datetime)
           }
-          else if (eachStatus.status_name === "RECEIVED"){
+          else if (eachStatus.status_name == "RECEIVED"){
             startDT = eachStatus.status_datetime
             console.log("---->",startDT)
+            times = [] //clear the list to Pending Status conflict 
             times.push(eachStatus.status_datetime)
           }
 
           if (eachStatus.status_name == "SUCCESS" || eachStatus.status_name == "FAIL"){
             endDT = eachStatus.status_datetime
+            //note the timing in either case
+            times.push(eachStatus.status_datetime)
           }
         })
         
+        //if two datetime exist in the list then perform subtraction (last-datetime - start-datetime)
+        if(times.length == 2){
+          console.log("++++++>",times)
+          calculatedTime = Math.abs(new Date(times[1]) - new Date(times[0])) / 60000;
+          console.log(calculatedTime)
+        }
+
         task = {"Id":element.task_id,
         "Type":element.task_name,
         "Info":element.message, 
-        "TotalTime":"",
-        "Status": element.conditions[element.conditions.length - 1].status_name, 
+        "TotalTime": calculatedTime.toFixed(6),
+        "Status": element.conditions.length > 0 ? element.conditions[element.conditions.length - 1].status_name : "WAITING", 
         "StartDateTime":startDT,
         "EndDateTime":endDT}
         _data.push(task)
@@ -159,18 +169,18 @@ function drawTable(complete_messagesData){
   //Table Constructor
   var table = new Tabulator("#example-table", {
     height:"311px",
-    data : _data,
+    data : _data.reverse(),
     colReorder: {
       realtime: false
   },
     columns:[
         {title:"Id", field:"Id", width:290},
         {title:"Type", field:"Type", width:90, formatter:messageTypeFormatter},
-        {title:"Info", field:"Info", width:300},
-        {title:"Task Start Date&Time", field:"StartDateTime", width:180},
-        {title:"Task End Date&Time", field:"EndDateTime", width:180},
-        {title:"Task Execution Time", field:"TotalTime", width:160},
-        {title:"Status", field:"Status", width:100},
+        {title:"Info", field:"Info", width:260},
+        {title:"Task Start Date & Time", field:"StartDateTime", width:200},
+        {title:"Task End Date & Time", field:"EndDateTime", width:200},
+        {title:"Exec Time Mins.", field:"TotalTime", width:160},
+        {title:"Status", field:"Status", width:80},
     ],
   });
 }

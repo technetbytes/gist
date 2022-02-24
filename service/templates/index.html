@@ -218,7 +218,7 @@
                 <div class="col-span-2 bg-white rounded-md dark:bg-darker">
                   <!-- Card header -->
                   <div class="p-4 border-b dark:border-primary">
-                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Active users right now</h4>
+                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Messages Processing Status</h4>
                   </div>
                   <!-- Chart -->
                   <div class="relative p-4">
@@ -327,7 +327,7 @@
                 start_time = (new Date).getTime();
                 $('#transport').text(socket.io.engine.transport.name);
                 socket.emit('server_ping');
-            }, 100000);
+            }, 1000);
 
             // Handler for the "pong" message. When the pong is received, the
             // time from the ping is stored, and the average of the last 30
@@ -342,7 +342,7 @@
                 let serverLatency = Math.round(10 * sum / ping_pong_times.length) / 10
                 $('#server-ping').text(serverLatency);
                 latencydata(serverLatency);
-                //update_ui();
+                update_ui();
             });
 
             //init messaging data
@@ -350,8 +350,6 @@
               console.log('getting_service_data ...');
               socket.emit('messaging_data', {data: 'FETCH'});
             }
-
-
         }
 
         const getTheme = () => {

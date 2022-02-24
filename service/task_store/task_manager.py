@@ -63,6 +63,7 @@ class TaskManager:
 
     @staticmethod
     def update_task_management_ext(event, name, status, id):
+        print("-------------------------------")
         tasks_obj_as_dict = TaskManager.get_task_management()        
         if tasks_obj_as_dict is not None:
             for element in tasks_obj_as_dict:
@@ -70,8 +71,8 @@ class TaskManager:
                     if elt['task_id'] == id:
                         new_status = Status(id, name, str(datetime.datetime.now()), status)
                         elt['conditions'].append(new_status)
-        tasks = Tasks(tasks_obj_as_dict['conditions'])
-        TaskManager._redis.set(TaskManager._task_management_key, json.dumps(tasks.to_json()))
+            tasks = Tasks(tasks_obj_as_dict['conditions'])
+            TaskManager._redis.set(TaskManager._task_management_key, json.dumps(tasks.to_json()))
 
     @staticmethod
     def update_task_management(event, name, status, id):
