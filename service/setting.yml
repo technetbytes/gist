@@ -13,6 +13,7 @@ others:
   secret_key : XrayYankeeZulu
 redis:
     task_management_key : task_status_data_gist
+    quick_task_view_key : quick_task_view_gist
     server : localhost
     port : 6379
     db : 0

@@ -195,7 +195,7 @@
                   </div>
                   <!-- Chart -->
                   <div class="relative p-4 h-72">
-                    <canvas id="barChart"></canvas>
+                    <canvas id="messagesBarChart"></canvas>
                   </div>
                 </div>
 
@@ -219,6 +219,7 @@
                   <!-- Card header -->
                   <div class="p-4 border-b dark:border-primary">
                     <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Messages Processing Status</h4>
+                    <button id="btnSubmit">hello</button>
                   </div>
                   <!-- Chart -->
                   <div class="relative p-4">
@@ -248,7 +249,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='data/js/script.js')}}"></script>
     <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
-<script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
     <script>
         const setup = () => {
 
@@ -285,31 +286,24 @@
                     cb();
             });
 
+              //Event handler for messaging sent data.
+              socket.on('quick_view_data', function(msg, cb) {
+              if(msg.data != 'None' && msg.state != 'ERROR'){           
+                window.localStorage.setItem('received_snapshot', JSON.stringify(msg.data))
+                console.log("------ quick_view_data",JSON.stringify(msg.data))
+              }
+              else{
+                console.log(msg);
+              }
+              if (cb)
+                    cb();
+            });
+
             //Event handler for messaging sent data.
             socket.on('received_data', function(msg, cb) {
               if(msg.data != 'None' && msg.state != 'ERROR'){           
                 window.localStorage.setItem('received_messages', JSON.stringify(msg.data))
-                // console.log((msg));
-                // msg = msg.data.replaceAll("\'","\"")
-                // console.log("++++++");
-                // msg = msg.replaceAll("\\","")
-                // console.log((msg));
-                // console.log(JSON.parse(msg));
-                // console.log(Array.isArray(msg.conditions))
-                console.log(msgtype_counts(msg.data))
-
-                update_ui();
-                // for(each_index in msg.conditions){
-                //     //x = JSON.stringify(msg.data.conditions[each_index])
-                //     x = msg.data.conditions[each_index]
-                //     x= x.replaceAll("\'","\"")
-                //     x = JSON.parse(x)
-                //     console.log("-----")
-                //     console.log(x['task_name'])
-                //     //pars = JSON.parse(JSON.stringify(x))
-                //     //console.log(pars['task_name'])
-                //     //console.log(msg.data.conditions[each_index])
-                // }
+                initUIData();
               }
               else{
                 console.log(msg);
@@ -342,7 +336,6 @@
                 let serverLatency = Math.round(10 * sum / ping_pong_times.length) / 10
                 $('#server-ping').text(serverLatency);
                 latencydata(serverLatency);
-                update_ui();
             });
 
             //init messaging data
@@ -394,6 +387,7 @@
           color: getColor(),
           selectedColor: 'cyan',
           setColors,
+          activeUsersChart
         }
       }
     </script>

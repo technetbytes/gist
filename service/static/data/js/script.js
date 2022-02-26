@@ -1,5 +1,99 @@
+const random = (max = 100) => {
+  return Math.round(Math.random() * max) + 20
+}
+
+const cssColors = (color) => {
+  return getComputedStyle(document.documentElement).getPropertyValue(color)
+}
+
+const getColor = () => {
+  return window.localStorage.getItem('color') ?? 'cyan'
+}
+
+const colors = {
+  primary: cssColors(`--color-${getColor()}`),
+  primaryLight: cssColors(`--color-${getColor()}-light`),
+  primaryLighter: cssColors(`--color-${getColor()}-lighter`),
+  primaryDark: cssColors(`--color-${getColor()}-dark`),
+  primaryDarker: cssColors(`--color-${getColor()}-darker`),
+}
+
+const randomData = () => {
+  return [
+    random(),
+    random(),
+    random(),
+    random(),
+    random(),
+    random(),
+    random(),
+    random(),
+    random(),
+    random(),
+    random(),
+    random(),
+  ]
+}
+
+//function messagesTypeBars(){
+const activeUsersChart = new Chart(document.getElementById('messagesBarChart'), {
+  type: 'bar',
+  data: {
+    labels: [...randomData(), ...randomData()],
+    datasets: [
+      {
+        data: [...randomData(), ...randomData()],
+        backgroundColor: colors.primary,
+        borderWidth: 0,
+        categoryPercentage: 1,
+      },
+    ],
+  },
+  options: {
+    scales: {
+      yAxes: [
+        {
+          display: false,
+          gridLines: false,
+        },
+      ],
+      xAxes: [
+        {
+          display: false,
+          gridLines: false,
+        },
+      ],
+      ticks: {
+        padding: 10,
+      },
+    },
+    cornerRadius: 2,
+    maintainAspectRatio: false,
+    legend: {
+      display: false,
+    },
+    tooltips: {
+      prefix: 'Users',
+      bodySpacing: 4,
+      footerSpacing: 4,
+      hasIndicator: true,
+      mode: 'index',
+      intersect: true,
+    },
+    hover: {
+      mode: 'nearest',
+      intersect: true,
+    },
+  },
+})
+//}
+
+  function updateUIData(){
+
+  }
+
   //init messaging data
-  function update_ui(){
+  function initUIData(){
     let complete_messagesData = window.localStorage.getItem('received_messages')
     complete_messagesData = JSON.parse(complete_messagesData)
     msgCount_data = msgtype_counts(complete_messagesData)
@@ -30,27 +124,10 @@
     return x
   }
 
-
-  const cssColors = (color) => {
-    return getComputedStyle(document.documentElement).getPropertyValue(color)
-  }
-  
-  const getColor = () => {
-    return window.localStorage.getItem('color') ?? 'cyan'
-  }
-  
-  const colors = {
-    primary: cssColors(`--color-${getColor()}`),
-    primaryLight: cssColors(`--color-${getColor()}-light`),
-    primaryLighter: cssColors(`--color-${getColor()}-lighter`),
-    primaryDark: cssColors(`--color-${getColor()}-dark`),
-    primaryDarker: cssColors(`--color-${getColor()}-darker`),
-  }
-
-function latencydata(serverLatency){
+  function latencydata(serverLatency){
     data = [];
     localServerLatencyData = JSON.parse(window.localStorage.getItem('serverLatency'))
-    console.log(localServerLatencyData, serverLatency)
+    //console.log(localServerLatencyData, serverLatency)
     if(localServerLatencyData == null)
         {
             data.push(serverLatency)
@@ -59,11 +136,10 @@ function latencydata(serverLatency){
     else
     {        
         data = JSON.parse(window.localStorage.getItem('serverLatency'))
-        console.log("....",typeof(data));
         data.push(serverLatency)
         window.localStorage.setItem('serverLatency', JSON.stringify(data))
     }
-    console.log(data)
+    //console.log(data)
     finalData = Object.values(data)
     let removedata = true;
     if(finalData.length > 10){
@@ -82,8 +158,11 @@ function latencydata(serverLatency){
 function build_widgets(data, complete_messagesData){
     topLevel_WidgetsInfo(data)
     msgType_CountChart(data)
+    _data = buildGridData(complete_messagesData)
     drawTable(complete_messagesData)
+    //messagesTypeBars()
 }
+
 function buildGridData(complete_messagesData){
   _data = [];
   if(complete_messagesData != undefined){
@@ -94,15 +173,13 @@ function buildGridData(complete_messagesData){
     endDT = ""
     complete_messagesData.conditions.forEach((element) => {
         element.conditions.forEach((eachStatus)=> {
-          console.log(eachStatus)
+          //console.log(eachStatus)
           if(eachStatus.status_name == "PENDING"){
             startDT = eachStatus.status_datetime
-            console.log("---->",startDT)
             times.push(eachStatus.status_datetime)
           }
           else if (eachStatus.status_name == "RECEIVED"){
             startDT = eachStatus.status_datetime
-            console.log("---->",startDT)
             times = [] //clear the list to Pending Status conflict 
             times.push(eachStatus.status_datetime)
           }
@@ -116,9 +193,7 @@ function buildGridData(complete_messagesData){
         
         //if two datetime exist in the list then perform subtraction (last-datetime - start-datetime)
         if(times.length == 2){
-          console.log("++++++>",times)
           calculatedTime = Math.abs(new Date(times[1]) - new Date(times[0])) / 60000;
-          console.log(calculatedTime)
         }
 
         task = {"Id":element.task_id,
@@ -131,13 +206,11 @@ function buildGridData(complete_messagesData){
         _data.push(task)
     });
   }
-  console.log(_data);
   return _data;
 }
 
-
 function topLevel_WidgetsInfo(data){
-    console.log(data.labels)
+    //console.log(data.labels)
     if(data != undefined || data != null){
         const initialValue = 0;
         const totalMessages = data.data.reduce(
@@ -164,15 +237,20 @@ var messageTypeFormatter = function(cell, formatterParams, onRendered){
   }
 };
 
-function drawTable(complete_messagesData){
-  _data = buildGridData(complete_messagesData)
+$(document).ready(function() {
+  $("#btnSubmit").click(function(){
+      alert("button");
+      //var selectedRows = $("#example-table").Tabulator("getSelectedRows").length;      
+      console.log(table.data);
+  }); 
+});
+
+let tabulatorGrid;
+function drawTable(complete_messagesData){  
   //Table Constructor
-  var table = new Tabulator("#example-table", {
+  const tabulatorGrid = new Tabulator("#example-table", {
     height:"311px",
     data : _data.reverse(),
-    colReorder: {
-      realtime: false
-  },
     columns:[
         {title:"Id", field:"Id", width:290},
         {title:"Type", field:"Type", width:90, formatter:messageTypeFormatter},

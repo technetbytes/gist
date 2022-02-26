@@ -1,4 +1,4 @@
-from task_store.task import Task
+from task_store.task import Task, QuickViewTask
 from task_store.tasks import Tasks
 from task_store.status import Status
 import redis
@@ -12,12 +12,14 @@ class TaskManager:
 
     _redis = None
     _task_management_key = None
+    _quick_task_view_key = None
     def __redis():
         server = Config.get_complete_property('redis','server')
         port = Config.get_complete_property('redis','port')
         db = Config.get_complete_property('redis','db')
         TaskManager._redis = redis.Redis(server, port, db)
         TaskManager._task_management_key = Config.get_complete_property('redis','task_management_key')
+        TaskManager._quick_task_view_key = Config.get_complete_property('redis','quick_task_view_key')
 
     @staticmethod
     def __find_task_object(json_object, name):
@@ -40,8 +42,33 @@ class TaskManager:
             TaskManager.__redis()
         TaskManager._redis.delete(TaskManager._task_management_key)
 
+    @staticmethod
+    def _clear_quick_task_view_obj_as_dict():
+        # check and then create redis server object       
+        if TaskManager._redis is None:
+            TaskManager.__redis()
+        TaskManager._redis.delete(TaskManager._quick_task_view_key)
 
-    def get_task_management():
+    @staticmethod
+    def snapshot_data():
+        data = TaskManager.get_quick_tasks_view()
+        TaskManager._clear_quick_task_view_obj_as_dict()
+        return data
+
+    @staticmethod
+    def get_quick_tasks_view():
+        # check and then create redis server object       
+        if TaskManager._redis is None:
+            TaskManager.__redis()
+        quick_tasks_view_data = TaskManager._redis.get(TaskManager._quick_task_view_key)
+        if quick_tasks_view_data is not None:
+            quick_task_view_data_as_str = quick_tasks_view_data.decode("utf-8")
+            quick_task_view_as_dict = json.loads(quick_task_view_data_as_str)                        
+            return quick_task_view_as_dict
+        else:
+            return None
+
+    def get_tasks():
         # check and then create redis server object       
         if TaskManager._redis is None:
             TaskManager.__redis()
@@ -63,20 +90,25 @@ class TaskManager:
 
     @staticmethod
     def update_task_management_ext(event, name, status, id):
-        print("-------------------------------")
-        tasks_obj_as_dict = TaskManager.get_task_management()        
+        msg_type = None
+        tasks_obj_as_dict = TaskManager.get_tasks()        
         if tasks_obj_as_dict is not None:
             for element in tasks_obj_as_dict:
                 for elt in  tasks_obj_as_dict[element]:
                     if elt['task_id'] == id:
+                        print("=====================",elt['task_name'])
+                        msg_type = elt['task_name']
                         new_status = Status(id, name, str(datetime.datetime.now()), status)
                         elt['conditions'].append(new_status)
             tasks = Tasks(tasks_obj_as_dict['conditions'])
             TaskManager._redis.set(TaskManager._task_management_key, json.dumps(tasks.to_json()))
 
+        # Call Quick view task creation process
+        TaskManager.create_quick_task_view(msg_type, id, str(datetime.datetime.now()), name)
+
     @staticmethod
     def update_task_management(event, name, status, id):
-        tasks_obj_as_dict = TaskManager.get_task_management()
+        tasks_obj_as_dict = TaskManager.get_tasks()
         if tasks_obj_as_dict is not None:
             #convert dict into json object called cache_object and add new item in the existing collection
             cache_data = json.loads(json.dumps(tasks_obj_as_dict))
@@ -92,13 +124,28 @@ class TaskManager:
                     update_json_obj = TaskManager.__update_json_object(cache_data['conditions'], current_task)
 
     @staticmethod
+    def create_quick_task_view(message_type, id, message, status):
+        _quick_view_tasks = []
+        tasks_obj_as_dict = TaskManager.get_quick_tasks_view()
+        if tasks_obj_as_dict is None:
+            new_quick_view_task = QuickViewTask(message_type, id, message, status)
+            _quick_view_tasks.append(new_quick_view_task.to_json())
+            TaskManager._redis.set(TaskManager._quick_task_view_key, json.dumps(_quick_view_tasks))
+        else:
+            new_quick_view_task = QuickViewTask(message_type, id, message, status)
+            #convert dict into json object called cache_object and add new item in the existing collection
+            cache_data = json.loads(json.dumps(tasks_obj_as_dict))
+            cache_data.append(new_quick_view_task.to_json())
+            TaskManager._redis.set(TaskManager._quick_task_view_key, json.dumps(cache_data))
+
+    @staticmethod
     def create_new_task(message_type, task):
-    # check and then create redis server object       
+        # check and then create redis server object       
         if TaskManager._redis is None:
             TaskManager.__redis()        
         _conditions = []
         _tasks = []
-        tasks_obj_as_dict = TaskManager.get_task_management()
+        tasks_obj_as_dict = TaskManager.get_tasks()
         if tasks_obj_as_dict is None:
             #first time creating task in the redis
             if task is not None:
@@ -115,7 +162,6 @@ class TaskManager:
             # prefixed by an asterisk operator to unpack the values in order to create a typename tuple subclass
             tasks = Tasks(*cache_data.values())
             TaskManager._redis.set(TaskManager._task_management_key, json.dumps(tasks.to_json()))
-            return tasks_obj_as_dict
             
     @staticmethod
     def testing_create_new_task(task):
@@ -123,7 +169,7 @@ class TaskManager:
         if TaskManager._redis is None:
             TaskManager.__redis()
         
-        tasks_obj_as_dict = TaskManager.get_task_management()
+        tasks_obj_as_dict = TaskManager.get_tasks()
         if tasks_obj_as_dict is None:
             TaskManager._redis.set(TaskManager._task_management_key, json.dumps(task))
         else:
