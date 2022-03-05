@@ -40,7 +40,7 @@ celerymq = get_celery(app=flask_app)
 
 def quick_view_task_watch():
     while True:
-        socketio.sleep(10)
+        socketio.sleep(1)
         snapshot_data = TaskManager.snapshot_data()
         if snapshot_data is not None:
             socketio.emit('quick_view_data',{'data': snapshot_data, 'state':'LOAD'})
@@ -67,8 +67,31 @@ def init_celery_logger(app):
     import threading
     threading.Thread(target= events_handler.start_listening, daemon=True).start()
 
+@celerymq.task(base=CeleryApiTask,bind=True,name='WhatsApp')
+def send_async_whatsapp(self, whatsapp_info):
+    print("Start sending whatsapp ...")
+    # Create a secure SSL context
+    context = get_context()
+    try:
+        print("whatsapp sent ....")
+    except Exception as exc:
+        # Print any error messages to stdout
+        print("error :- ",exc)
+        raise self.retry(exc=exc)
 
-@celerymq.task(base=CeleryApiTask,bind=True)
+@celerymq.task(base=CeleryApiTask,bind=True,name='SMS')
+def send_async_sms(self, sms_info):
+    print("Start sending SMS ...")
+    # Create a secure SSL context
+    context = get_context()
+    try:
+        print("sms sent ....")
+    except Exception as exc:
+        # Print any error messages to stdout
+        print("error :- ",exc)
+        raise self.retry(exc=exc)
+
+@celerymq.task(base=CeleryApiTask,bind=True,name='Email')
 def send_async_email(self, email_info):
     print("Start sending email ...")
     # Create a secure SSL context
@@ -95,6 +118,44 @@ def task_status():
     if task_id is not None:
         task_result = celerymq.AsyncResult(task_id)
         return task_result.state
+
+@flask_app.route('/api/v1/send_whatsapp', methods=['POST'])
+def send_whatsapp():
+    #generate whatsapp body from request object base on request type 
+    whatsapp_data = request
+    #send async email
+    task = send_async_whatsapp.delay(whatsapp_data)
+    #Store task info in redis-cache   
+    TaskManager.create_new_task(MESSAGE_TYPE_WHATSAPP, task)    
+    response = make_response(
+                jsonify(
+                     message="SMS sent.",
+                    category=MESSAGE_TYPE_WHATSAPP,
+                    status=201,
+                    data=whatsapp_data),
+                201,
+            )
+    response.headers["Content-Type"] = "application/json"
+    return response
+
+@flask_app.route('/api/v1/send_sms', methods=['POST'])
+def send_sms():
+    #generate sms body from request object base on request type 
+    sms_data = request
+    #send async email
+    task = send_async_sms.delay(sms_data)
+    #Store task info in redis-cache   
+    TaskManager.create_new_task(MESSAGE_TYPE_SMS, task)    
+    response = make_response(
+                jsonify(
+                     message="SMS sent.",
+                    category=MESSAGE_TYPE_SMS,
+                    status=201,
+                    data=sms_data),
+                201,
+            )
+    response.headers["Content-Type"] = "application/json"
+    return response
 
 @flask_app.route('/api/v1/send_email', methods=['POST'])
 def send_email():

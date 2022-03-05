@@ -89,22 +89,21 @@ class TaskManager:
         return tasks_obj_as_dict
 
     @staticmethod
-    def update_task_management_ext(event, name, status, id):
-        msg_type = None
+    def update_task_management_ext(event, status, name, id):
+        print("=========================",event, name, status, id)
         tasks_obj_as_dict = TaskManager.get_tasks()        
         if tasks_obj_as_dict is not None:
             for element in tasks_obj_as_dict:
                 for elt in  tasks_obj_as_dict[element]:
                     if elt['task_id'] == id:
                         print("=====================",elt['task_name'])
-                        msg_type = elt['task_name']
-                        new_status = Status(id, name, str(datetime.datetime.now()), status)
+                        new_status = Status(id, status, str(datetime.datetime.now()), name)
                         elt['conditions'].append(new_status)
             tasks = Tasks(tasks_obj_as_dict['conditions'])
-            TaskManager._redis.set(TaskManager._task_management_key, json.dumps(tasks.to_json()))
+            # Call Quick view task creation process
+            TaskManager.create_quick_task_view(name, id, str(datetime.datetime.now()), status)
+            TaskManager._redis.set(TaskManager._task_management_key, json.dumps(tasks.to_json())) 
 
-        # Call Quick view task creation process
-        TaskManager.create_quick_task_view(msg_type, id, str(datetime.datetime.now()), name)
 
     @staticmethod
     def update_task_management(event, name, status, id):
@@ -135,6 +134,24 @@ class TaskManager:
             new_quick_view_task = QuickViewTask(message_type, id, message, status)
             #convert dict into json object called cache_object and add new item in the existing collection
             cache_data = json.loads(json.dumps(tasks_obj_as_dict))
+
+            #print("type of cache_data ===>", type(cache_data))
+            #print("LEN of cache_data ===>", len(cache_data))
+
+            #temp_cache_data = []
+            #for each_task_obj in cache_data:
+            #    for val,cal in each_task_obj.items():    
+            #        print("{} {}",val,cal)
+            #        if each_task_obj.task_id != id:
+            #            temp_cache_data.append(each_task_obj)
+            #        else:
+            #            temp_cache_data.append(new_quick_view_task.to_json())   
+            #            print("--each_task_obj------>",temp_cache_data)
+
+            #re-copy the list object
+            #cache_data = temp_cache_data
+            #print("LEN of cache_data ===>", len(cache_data))            
+            
             cache_data.append(new_quick_view_task.to_json())
             TaskManager._redis.set(TaskManager._quick_task_view_key, json.dumps(cache_data))
 

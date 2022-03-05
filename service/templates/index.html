@@ -203,7 +203,7 @@
                 <div class="bg-white rounded-md dark:bg-darker" x-data="{ isOn: false }">
                   <!-- Card header -->
                   <div class="flex items-center justify-between p-2 border-b dark:border-primary">
-                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Messages Chart</h4>                    
+                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Messages Type</h4>                    
                   </div>
                   <!-- Chart -->
                   <div class="relative p-4 h-72">
@@ -288,9 +288,8 @@
 
               //Event handler for messaging sent data.
               socket.on('quick_view_data', function(msg, cb) {
-              if(msg.data != 'None' && msg.state != 'ERROR'){           
-                window.localStorage.setItem('received_snapshot', JSON.stringify(msg.data))
-                console.log("------ quick_view_data",JSON.stringify(msg.data))
+              if(msg.data != 'None' && msg.state != 'ERROR'){    
+                update_widgets(JSON.stringify(msg.data))                  
               }
               else{
                 console.log(msg);

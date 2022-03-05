@@ -96,8 +96,9 @@ const activeUsersChart = new Chart(document.getElementById('messagesBarChart'), 
   function initUIData(){
     let complete_messagesData = window.localStorage.getItem('received_messages')
     complete_messagesData = JSON.parse(complete_messagesData)
-    msgCount_data = msgtype_counts(complete_messagesData)
-    build_widgets(msgCount_data, complete_messagesData)
+    msgTypeCount_data = msgtype_counts(complete_messagesData)
+    window.localStorage.setItem('msgTypeCount_data', JSON.stringify(msgTypeCount_data))
+    build_widgets(msgTypeCount_data, complete_messagesData)
   }
 
   function msgtype_counts(complete_messagesData){
@@ -123,6 +124,16 @@ const activeUsersChart = new Chart(document.getElementById('messagesBarChart'), 
     },{})
     return x
   }
+
+  function groupby_quickViewData(quick_view_data){
+    result = quick_view_data.reduce(function (r, a) {
+          r[a.task_name] = r[a.task_name] || [];
+          r[a.task_name].push(a);
+          return r;
+      }, Object.create(null));
+      return result
+  }
+
 
   function latencydata(serverLatency){
     data = [];
@@ -161,6 +172,141 @@ function build_widgets(data, complete_messagesData){
     _data = buildGridData(complete_messagesData)
     drawTable(complete_messagesData)
     //messagesTypeBars()
+}
+
+function update_widgets(quick_view_data){
+  console.log("------ quick_view_data",quick_view_data)
+  console.log("update widget call....")
+  previous_MsgTypeCount_Data = JSON.parse(window.localStorage.getItem('msgTypeCount_data'))
+  quick_data = JSON.parse(quick_view_data);
+  quick_data = quick_data.sort((itemA, itemB) => itemA.task_id - itemB.task_id)
+  
+  //Step 1. Reduce By Task Name
+  result = quick_data.reduce(function (r, a) {
+            r[a.task_name] = r[a.task_name] || [];
+            r[a.task_name].push(a);
+            return r;
+        }, Object.create(null));
+  
+  //Step 2. Create manage data with Labels and data properties
+  chart_data = {"labels" : [], "data" : []}
+  Object.keys(result).forEach((x,d) =>{
+    chart_data.labels.push(x)
+    inner_data = {}
+    inner_data[x] = result[x].reduce(function (r, a) {
+                    r[a.task_id] = r[a.task_id] || [];
+                    r[a.task_id].push(a);
+          return r;
+      }, Object.create(null))
+    // chart_data.data.push(JSON.stringify(inner_data))
+     chart_data.data.push(inner_data)
+    // //console.log(x);
+    // //console.log(result[x].length);
+  });
+  
+  //Step 3.
+  Object.entries(chart_data.data).forEach((dataA,dataIndex) =>{	
+    //console.log("index ... -->",chart_data.data[dataIndex], dataIndex);
+    s = chart_data.data[dataIndex]
+    c = s
+   // s = JSON.parse(JSON.stringify(chart_data.data[dataIndex]))
+   // c = JSON.parse(s)
+   // console.log("==>>>=>>>",c)
+   // //console.log("--Keys-->",)
+      Object.keys(c).forEach((firstKey) =>{
+        //console.log(firstKey)
+        Object.entries(c).forEach((ss,ss1) => {
+              _temp1 = c[firstKey]
+            // //_temp1 = JSON.parse(JSON.stringify(_temp1))
+            // //console.log("***",ss,ss1) 
+            //console.log("*>>*",_temp1)
+            // //console.log("***",)
+            Object.keys(_temp1).forEach((eachKey)=>{
+                //console.log("***--->",_temp1[eachKey])
+                
+                failSuccessDataItem = []
+                pendingReceivedStartedDataItem = []
+                
+              _temp1[eachKey].forEach((eachDataItem,index_) => {
+                //Check for SUCCESS & FAIL					
+                if(eachDataItem.status == 'SUCCESS' || eachDataItem.status == 'FAIL'){
+                  failSuccessDataItem.push(eachDataItem);
+                }
+                else{
+                  //Check for PENDING, RECEIVED & STARTED
+                  pendingReceivedStartedDataItem.push(eachDataItem);
+                }
+              })
+              
+              //console.log("failSuccessDataItem length --->",failSuccessDataItem.length,"pendingReceivedStartedDataItem length--->",pendingReceivedStartedDataItem.length)
+              if(failSuccessDataItem.length >= 1){
+                //its mean's there is fail or success data item exist in the list
+                //we dont need to do anything, simple set the list object to the _temp1[eachKey]
+                _temp1[eachKey] = failSuccessDataItem
+              }
+              else if(pendingReceivedStartedDataItem.length > 0) {
+                //we first check STARTED status, followed by RECEIVED and in the end PENDING
+                //and remove the remain data items.
+                let i = pendingReceivedStartedDataItem.length;
+                
+                isStartedFound = false;
+                isReceivedFound = false;
+                for(x=i-1;x>=0;x--){
+                  console.log("X", x)
+                  if(pendingReceivedStartedDataItem[x].status == 'STARTED'){
+                    isStartedFound = true;							
+                  }
+                  else if(pendingReceivedStartedDataItem[x].status == 'RECEIVED'){
+                    isReceivedFound = true;
+                  }
+                }
+                //console.log("--->",isStartedFound,isReceivedFound)
+                if(isStartedFound || isReceivedFound){
+                  if(isStartedFound){
+                    //using reverse looping
+                    while(i--){
+                      //console.log(pendingReceivedStartedDataItem[i].status,i)
+                      if(pendingReceivedStartedDataItem[i].status != 'STARTED'){
+                        pendingReceivedStartedDataItem.splice(i,1)
+                      }
+                    }
+                  }
+                  else{
+                    //using reverse looping					
+                    while(i--){                      
+                      //console.log(pendingReceivedStartedDataItem[i].status,i)
+                      if(pendingReceivedStartedDataItem[i].status != 'RECEIVED'){
+                        pendingReceivedStartedDataItem.splice(i,1)
+                      }
+                    }
+                  }
+                  _temp1[eachKey] = pendingReceivedStartedDataItem
+                }
+                else{
+                  _temp1[eachKey] = pendingReceivedStartedDataItem
+                }
+                //console.log("after Remove PRS Data Item--->",pendingReceivedStartedDataItem[0].status);
+              }
+              
+            })
+            // //Object.entries(_temp1).forEach((x, xx) => {})
+          })
+        //console.log("===**-FINAL- C - Data**===", firstKey)
+        //console.log(JSON.stringify(c))
+    })
+  })
+
+  console.log(chart_data.data)
+
+
+
+  //console.log("groupby --->",groupby_quickViewData(quick_data))
+  //console.log("Length ----->",quick_data)
+  // topLevel_WidgetsInfo(data)
+  // msgType_CountChart(data)
+  // _data = buildGridData(complete_messagesData)
+  // drawTable(complete_messagesData)
+  // //messagesTypeBars()
 }
 
 function buildGridData(complete_messagesData){
