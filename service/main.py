@@ -122,7 +122,7 @@ def task_status():
 @flask_app.route('/api/v1/send_whatsapp', methods=['POST'])
 def send_whatsapp():
     #generate whatsapp body from request object base on request type 
-    whatsapp_data = request
+    whatsapp_data = request.json
     #send async email
     task = send_async_whatsapp.delay(whatsapp_data)
     #Store task info in redis-cache   
@@ -141,7 +141,7 @@ def send_whatsapp():
 @flask_app.route('/api/v1/send_sms', methods=['POST'])
 def send_sms():
     #generate sms body from request object base on request type 
-    sms_data = request
+    sms_data = request.json
     #send async email
     task = send_async_sms.delay(sms_data)
     #Store task info in redis-cache   
