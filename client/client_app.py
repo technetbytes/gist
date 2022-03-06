@@ -6,6 +6,7 @@ from whatsapp_message import whatsapp_request
 import random
 
 def messaging():
+    #sms_request()
     number = random.randint(1,3)
     if number == 1:
         print("sending email ...")

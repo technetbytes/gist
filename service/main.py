@@ -40,7 +40,7 @@ celerymq = get_celery(app=flask_app)
 
 def quick_view_task_watch():
     while True:
-        socketio.sleep(1)
+        socketio.sleep(3)
         snapshot_data = TaskManager.snapshot_data()
         if snapshot_data is not None:
             socketio.emit('quick_view_data',{'data': snapshot_data, 'state':'LOAD'})

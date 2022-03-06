@@ -96,12 +96,13 @@ const activeUsersChart = new Chart(document.getElementById('messagesBarChart'), 
   function initUIData(){
     let complete_messagesData = window.localStorage.getItem('received_messages')
     complete_messagesData = JSON.parse(complete_messagesData)
-    msgTypeCount_data = msgtype_counts(complete_messagesData)
+    msgTypeCount_data = build_msgtype_counts(complete_messagesData)
     window.localStorage.setItem('msgTypeCount_data', JSON.stringify(msgTypeCount_data))
     build_widgets(msgTypeCount_data, complete_messagesData)
   }
 
-  function msgtype_counts(complete_messagesData){
+  //Build Message Type Count Working
+  function build_msgtype_counts(complete_messagesData){
     chart_data = {
       "labels" : [],
       "data" : []
@@ -115,7 +116,7 @@ const activeUsersChart = new Chart(document.getElementById('messagesBarChart'), 
     }
     return chart_data;
   }
-
+  //GroupBy Data for Message Type Count Working
   function groupby_data(complete_messagesData){
     const x = complete_messagesData.conditions.reduce((group, task) => {
       group[task.task_name] = group[task.task_name] ?? [];
@@ -125,6 +126,7 @@ const activeUsersChart = new Chart(document.getElementById('messagesBarChart'), 
     return x
   }
 
+  //GroupBy for Quick View Data not in use
   function groupby_quickViewData(quick_view_data){
     result = quick_view_data.reduce(function (r, a) {
           r[a.task_name] = r[a.task_name] || [];
@@ -135,7 +137,7 @@ const activeUsersChart = new Chart(document.getElementById('messagesBarChart'), 
   }
 
 
-  function latencydata(serverLatency){
+  function latencyData(serverLatency){
     data = [];
     localServerLatencyData = JSON.parse(window.localStorage.getItem('serverLatency'))
     //console.log(localServerLatencyData, serverLatency)
@@ -174,9 +176,7 @@ function build_widgets(data, complete_messagesData){
     //messagesTypeBars()
 }
 
-function update_widgets(quick_view_data){
-  console.log("------ quick_view_data",quick_view_data)
-  console.log("update widget call....")
+function updateWidgetsUsingQuickViewData(quick_view_data){
   previous_MsgTypeCount_Data = JSON.parse(window.localStorage.getItem('msgTypeCount_data'))
   quick_data = JSON.parse(quick_view_data);
   quick_data = quick_data.sort((itemA, itemB) => itemA.task_id - itemB.task_id)
@@ -198,35 +198,19 @@ function update_widgets(quick_view_data){
                     r[a.task_id].push(a);
           return r;
       }, Object.create(null))
-    // chart_data.data.push(JSON.stringify(inner_data))
      chart_data.data.push(inner_data)
-    // //console.log(x);
-    // //console.log(result[x].length);
   });
   
   //Step 3.
-  Object.entries(chart_data.data).forEach((dataA,dataIndex) =>{	
-    //console.log("index ... -->",chart_data.data[dataIndex], dataIndex);
+  Object.entries(chart_data.data).forEach((dataA,dataIndex) =>{
     s = chart_data.data[dataIndex]
     c = s
-   // s = JSON.parse(JSON.stringify(chart_data.data[dataIndex]))
-   // c = JSON.parse(s)
-   // console.log("==>>>=>>>",c)
-   // //console.log("--Keys-->",)
       Object.keys(c).forEach((firstKey) =>{
-        //console.log(firstKey)
         Object.entries(c).forEach((ss,ss1) => {
-              _temp1 = c[firstKey]
-            // //_temp1 = JSON.parse(JSON.stringify(_temp1))
-            // //console.log("***",ss,ss1) 
-            //console.log("*>>*",_temp1)
-            // //console.log("***",)
-            Object.keys(_temp1).forEach((eachKey)=>{
-                //console.log("***--->",_temp1[eachKey])
-                
+            _temp1 = c[firstKey]
+            Object.keys(_temp1).forEach((eachKey)=>{                
                 failSuccessDataItem = []
-                pendingReceivedStartedDataItem = []
-                
+                pendingReceivedStartedDataItem = []                
               _temp1[eachKey].forEach((eachDataItem,index_) => {
                 //Check for SUCCESS & FAIL					
                 if(eachDataItem.status == 'SUCCESS' || eachDataItem.status == 'FAIL'){
@@ -238,7 +222,6 @@ function update_widgets(quick_view_data){
                 }
               })
               
-              //console.log("failSuccessDataItem length --->",failSuccessDataItem.length,"pendingReceivedStartedDataItem length--->",pendingReceivedStartedDataItem.length)
               if(failSuccessDataItem.length >= 1){
                 //its mean's there is fail or success data item exist in the list
                 //we dont need to do anything, simple set the list object to the _temp1[eachKey]
@@ -252,7 +235,7 @@ function update_widgets(quick_view_data){
                 isStartedFound = false;
                 isReceivedFound = false;
                 for(x=i-1;x>=0;x--){
-                  console.log("X", x)
+                  //console.log("X", x)
                   if(pendingReceivedStartedDataItem[x].status == 'STARTED'){
                     isStartedFound = true;							
                   }
@@ -260,12 +243,10 @@ function update_widgets(quick_view_data){
                     isReceivedFound = true;
                   }
                 }
-                //console.log("--->",isStartedFound,isReceivedFound)
                 if(isStartedFound || isReceivedFound){
                   if(isStartedFound){
                     //using reverse looping
                     while(i--){
-                      //console.log(pendingReceivedStartedDataItem[i].status,i)
                       if(pendingReceivedStartedDataItem[i].status != 'STARTED'){
                         pendingReceivedStartedDataItem.splice(i,1)
                       }
@@ -274,7 +255,6 @@ function update_widgets(quick_view_data){
                   else{
                     //using reverse looping					
                     while(i--){                      
-                      //console.log(pendingReceivedStartedDataItem[i].status,i)
                       if(pendingReceivedStartedDataItem[i].status != 'RECEIVED'){
                         pendingReceivedStartedDataItem.splice(i,1)
                       }
@@ -285,28 +265,47 @@ function update_widgets(quick_view_data){
                 else{
                   _temp1[eachKey] = pendingReceivedStartedDataItem
                 }
-                //console.log("after Remove PRS Data Item--->",pendingReceivedStartedDataItem[0].status);
-              }
-              
+              }              
             })
-            // //Object.entries(_temp1).forEach((x, xx) => {})
           })
-        //console.log("===**-FINAL- C - Data**===", firstKey)
-        //console.log(JSON.stringify(c))
     })
   })
 
-  console.log(chart_data.data)
+  data2 = {}
+  chart_data.data.forEach((xx,indexX) => {
+    Object.keys(xx).forEach((px,index) => {
+      data2[px.toUpperCase()] = Object.keys(xx[px]).length
+    })
+  })
+  console.log(data2)
 
-
-
-  //console.log("groupby --->",groupby_quickViewData(quick_data))
-  //console.log("Length ----->",quick_data)
-  // topLevel_WidgetsInfo(data)
-  // msgType_CountChart(data)
-  // _data = buildGridData(complete_messagesData)
-  // drawTable(complete_messagesData)
-  // //messagesTypeBars()
+  if(previous_MsgTypeCount_Data.labels.findIndex(element => element == "EMAIL") > -1 ){
+    let index = previous_MsgTypeCount_Data.labels.findIndex(element => element == "EMAIL");
+    emailCount = previous_MsgTypeCount_Data.data[index];    
+    if(data2.hasOwnProperty("EMAIL")){
+      emailCount = emailCount + parseInt(data2["EMAIL"])
+    }
+    previous_MsgTypeCount_Data.data[index] = emailCount;
+  }
+  if(previous_MsgTypeCount_Data.labels.findIndex(element => element == "SMS") > -1 ){
+    let index = previous_MsgTypeCount_Data.labels.findIndex(element => element == "SMS");
+    smsCount = previous_MsgTypeCount_Data.data[index];    
+    if(data2.hasOwnProperty("SMS")){
+      smsCount = smsCount + parseInt(data2["SMS"])
+    }
+    previous_MsgTypeCount_Data.data[index] = smsCount;
+  }
+  if(previous_MsgTypeCount_Data.labels.findIndex(element => element == "WHATSAPP") > -1 ){
+    let index = previous_MsgTypeCount_Data.labels.findIndex(element => element == "WHATSAPP");
+    whatsappCount = previous_MsgTypeCount_Data.data[index];    
+    if(data2.hasOwnProperty("WHATSAPP")){
+      whatsappCount = whatsappCount + parseInt(data2["WHATSAPP"])
+    }
+    previous_MsgTypeCount_Data.data[index] = whatsappCount;
+  }
+  window.localStorage.setItem('msgTypeCount_data', JSON.stringify(previous_MsgTypeCount_Data))
+  topLevel_WidgetsInfo(previous_MsgTypeCount_Data)
+  msgType_CountChart(previous_MsgTypeCount_Data)
 }
 
 function buildGridData(complete_messagesData){

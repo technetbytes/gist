@@ -219,7 +219,6 @@
                   <!-- Card header -->
                   <div class="p-4 border-b dark:border-primary">
                     <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Messages Processing Status</h4>
-                    <button id="btnSubmit">hello</button>
                   </div>
                   <!-- Chart -->
                   <div class="relative p-4">
@@ -281,7 +280,7 @@
                 $('#connectivity').attr("srcset", "{{ url_for('static', filename='data/images/connected.png')}} 3x");
                 //$('#connectivity').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
                 console.log('Received #' + msg.count + ': ' + msg.data);
-                getting_service_data();
+                gettingServiceData();
                 if (cb)
                     cb();
             });
@@ -289,7 +288,7 @@
               //Event handler for messaging sent data.
               socket.on('quick_view_data', function(msg, cb) {
               if(msg.data != 'None' && msg.state != 'ERROR'){    
-                update_widgets(JSON.stringify(msg.data))                  
+                updateWidgetsUsingQuickViewData(JSON.stringify(msg.data))                  
               }
               else{
                 console.log(msg);
@@ -334,12 +333,12 @@
                     sum += ping_pong_times[i];
                 let serverLatency = Math.round(10 * sum / ping_pong_times.length) / 10
                 $('#server-ping').text(serverLatency);
-                latencydata(serverLatency);
+                latencyData(serverLatency);
             });
 
             //init messaging data
-            function getting_service_data(){
-              console.log('getting_service_data ...');
+            function gettingServiceData(){
+              console.log('gettingServiceData ...');
               socket.emit('messaging_data', {data: 'FETCH'});
             }
         }
