@@ -108,7 +108,7 @@
                   </div>
                   <div>
                     <span>                        
-                      <img srcset="{{ url_for('static', filename='data/images/message.png')}} 3x" alt="Comments icon" loading="lazy">
+                      <img srcset="{{ url_for('static', filename='data/images/totalmsg.png')}}" alt="Comments icon" loading="lazy">
                     </span>
                   </div>
                 </div>
@@ -131,7 +131,7 @@
                   </div>
                   <div>
                     <span>
-                      <img srcset="{{ url_for('static', filename='data/images/email-open.png')}} 3x" alt="Comments icon" loading="lazy">
+                      <img srcset="{{ url_for('static', filename='data/images/email.png')}}" alt="Comments icon" loading="lazy">
                     </span>
                   </div>
                 </div>
@@ -154,7 +154,7 @@
                   </div>
                   <div>
                     <span>
-                      <img srcset="{{ url_for('static', filename='data/images/sms.png')}} 2x" alt="Comments icon" loading="lazy">
+                      <img srcset="{{ url_for('static', filename='data/images/sms.png')}}" alt="Comments icon" loading="lazy">
                     </span>
                   </div>
                 </div>
@@ -178,7 +178,7 @@
                   </div>
                   <div>
                     <span>
-					<img srcset="{{ url_for('static', filename='data/images/whatsapp.png')}} 2x" alt="Comments icon" loading="lazy">
+					<img srcset="{{ url_for('static', filename='data/images/whatsapp.png')}}" alt="Comments icon" loading="lazy">
 					</span>
                   </div>
                 </div>
@@ -203,7 +203,7 @@
                 <div class="bg-white rounded-md dark:bg-darker" x-data="{ isOn: false }">
                   <!-- Card header -->
                   <div class="flex items-center justify-between p-2 border-b dark:border-primary">
-                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Messages Type</h4>                    
+                    <h4 class="text-lg font-semibold text-gray-500 dark:text-light">Messages Count</h4>                    
                   </div>
                   <!-- Chart -->
                   <div class="relative p-4 h-72">
@@ -256,10 +256,8 @@
             // Connect to the Socket.IO server.
             // The connection URL has the following format, relative to the current page:
             //     http[s]://<domain>:<port>[/<namespace>]
-            var socket = io();
-            
-            console.log("socket init")
-
+            var socket = io();            
+            console.log("Socket init")
             socket.on('service_init',function(){
               console.log("Establishing connection ...");
             });
@@ -279,7 +277,7 @@
                 //srcset="{{ url_for('static', filename='build/images/disconnected.png')}} 3x"
                 $('#connectivity').attr("srcset", "{{ url_for('static', filename='data/images/connected.png')}} 3x");
                 //$('#connectivity').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
-                console.log('Received #' + msg.count + ': ' + msg.data);
+                console.log('Received #' + msg.count +  ' : ' + msg.data);
                 gettingServiceData();
                 if (cb)
                     cb();
@@ -287,7 +285,7 @@
 
               //Event handler for messaging sent data.
               socket.on('quick_view_data', function(msg, cb) {
-              if(msg.data != 'None' && msg.state != 'ERROR'){    
+              if(msg.data != 'None' && msg.state != 'ERROR'){             
                 updateWidgetsUsingQuickViewData(JSON.stringify(msg.data))                  
               }
               else{
@@ -301,6 +299,7 @@
             socket.on('received_data', function(msg, cb) {
               if(msg.data != 'None' && msg.state != 'ERROR'){           
                 window.localStorage.setItem('received_messages', JSON.stringify(msg.data))
+                console.log("InitUI with data")
                 initUIData();
               }
               else{
@@ -338,7 +337,7 @@
 
             //init messaging data
             function gettingServiceData(){
-              console.log('gettingServiceData ...');
+              console.log('Getting Service Data ...');
               socket.emit('messaging_data', {data: 'FETCH'});
             }
         }

@@ -1,3 +1,4 @@
+let tabulatorGrid;
 const random = (max = 100) => {
   return Math.round(Math.random() * max) + 20
 }
@@ -20,47 +21,51 @@ const colors = {
 
 const randomData = () => {
   return [
-    random(),
-    random(),
-    random(),
-    random(),
-    random(),
-    random(),
-    random(),
-    random(),
-    random(),
-    random(),
-    random(),
-    random(),
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,,0,0,0,0,0,0,0,0,0,
   ]
 }
 
-//function messagesTypeBars(){
 const activeUsersChart = new Chart(document.getElementById('messagesBarChart'), {
   type: 'bar',
   data: {
-    labels: [...randomData(), ...randomData()],
+    labels: [...randomData()],
     datasets: [
       {
-        data: [...randomData(), ...randomData()],
-        backgroundColor: colors.primary,
-        borderWidth: 0,
-        categoryPercentage: 1,
-      },
-    ],
+        data: [...randomData()],
+        label: "WhatsApp",
+        borderColor: "#3cba9f",
+        backgroundColor: "#71d1bd",
+        borderWidth:2
+      }, { 
+        data: [...randomData()],
+        label: "SMS",
+        borderColor: "#ffa500",
+        backgroundColor:"#ffc04d",
+        borderWidth:2
+      }, { 
+        data: [...randomData()],
+        label: "E-mail",
+        borderColor: "#c45850",
+        backgroundColor:"#d78f89",
+        borderWidth:2
+      }
+    ]
+   
   },
   options: {
     scales: {
-      yAxes: [
+       yAxes: [
         {
           display: false,
           gridLines: false,
+          stacked: true 
         },
       ],
       xAxes: [
         {
           display: false,
           gridLines: false,
+          stacked: true,
         },
       ],
       ticks: {
@@ -70,15 +75,11 @@ const activeUsersChart = new Chart(document.getElementById('messagesBarChart'), 
     cornerRadius: 2,
     maintainAspectRatio: false,
     legend: {
-      display: false,
+      display: true,
+      position: 'bottom'
     },
     tooltips: {
-      prefix: 'Users',
-      bodySpacing: 4,
-      footerSpacing: 4,
-      hasIndicator: true,
-      mode: 'index',
-      intersect: true,
+      mode:'x'
     },
     hover: {
       mode: 'nearest',
@@ -86,11 +87,6 @@ const activeUsersChart = new Chart(document.getElementById('messagesBarChart'), 
     },
   },
 })
-//}
-
-  function updateUIData(){
-
-  }
 
   //init messaging data
   function initUIData(){
@@ -116,6 +112,7 @@ const activeUsersChart = new Chart(document.getElementById('messagesBarChart'), 
     }
     return chart_data;
   }
+
   //GroupBy Data for Message Type Count Working
   function groupby_data(complete_messagesData){
     const x = complete_messagesData.conditions.reduce((group, task) => {
@@ -135,7 +132,6 @@ const activeUsersChart = new Chart(document.getElementById('messagesBarChart'), 
       }, Object.create(null));
       return result
   }
-
 
   function latencyData(serverLatency){
     data = [];
@@ -166,17 +162,17 @@ const activeUsersChart = new Chart(document.getElementById('messagesBarChart'), 
         height: 20,
         width : 20,
         type: 'bar'});
-}
+  }
 
-function build_widgets(data, complete_messagesData){
+  function build_widgets(data, complete_messagesData){
     topLevel_WidgetsInfo(data)
     msgType_CountChart(data)
     _data = buildGridData(complete_messagesData)
-    drawTable(complete_messagesData)
-    //messagesTypeBars()
-}
+    drawTable()
+  }
 
-function updateWidgetsUsingQuickViewData(quick_view_data){
+  function updateWidgetsUsingQuickViewData(quick_view_data){
+    
   previous_MsgTypeCount_Data = JSON.parse(window.localStorage.getItem('msgTypeCount_data'))
   quick_data = JSON.parse(quick_view_data);
   quick_data = quick_data.sort((itemA, itemB) => itemA.task_id - itemB.task_id)
@@ -277,8 +273,7 @@ function updateWidgetsUsingQuickViewData(quick_view_data){
       data2[px.toUpperCase()] = Object.keys(xx[px]).length
     })
   })
-  console.log(data2)
-
+  
   if(previous_MsgTypeCount_Data.labels.findIndex(element => element == "EMAIL") > -1 ){
     let index = previous_MsgTypeCount_Data.labels.findIndex(element => element == "EMAIL");
     emailCount = previous_MsgTypeCount_Data.data[index];    
@@ -306,6 +301,7 @@ function updateWidgetsUsingQuickViewData(quick_view_data){
   window.localStorage.setItem('msgTypeCount_data', JSON.stringify(previous_MsgTypeCount_Data))
   topLevel_WidgetsInfo(previous_MsgTypeCount_Data)
   msgType_CountChart(previous_MsgTypeCount_Data)
+  message_Pulse_Count(data2)
 }
 
 function buildGridData(complete_messagesData){
@@ -328,7 +324,6 @@ function buildGridData(complete_messagesData){
             times = [] //clear the list to Pending Status conflict 
             times.push(eachStatus.status_datetime)
           }
-
           if (eachStatus.status_name == "SUCCESS" || eachStatus.status_name == "FAIL"){
             endDT = eachStatus.status_datetime
             //note the timing in either case
@@ -372,13 +367,13 @@ function topLevel_WidgetsInfo(data){
 //generate box plot
 var messageTypeFormatter = function(cell, formatterParams, onRendered){
   if(cell.getValue() == "EMAIL"){
-      return "<img src='static/data/images/Asset210.png'>";
+      return "<img src='static/data/images/email_icon.png'>";
   }
   else if(cell.getValue() == "SMS"){
-      return "<img src='static/data/images/sms.png'>";
+      return "<img src='static/data/images/sms_icon.png'>";
   }
   else{
-      return "<img src='static/data/images/whatsapp.png'>";
+      return "<img src='static/data/images/whatsapp_icon.png'>";
   }
 };
 
@@ -386,19 +381,18 @@ $(document).ready(function() {
   $("#btnSubmit").click(function(){
       alert("button");
       //var selectedRows = $("#example-table").Tabulator("getSelectedRows").length;      
-      console.log(table.data);
+      console.log("sfffaf",table.data);
   }); 
 });
 
-let tabulatorGrid;
-function drawTable(complete_messagesData){  
+function drawTable(){  
   //Table Constructor
-  const tabulatorGrid = new Tabulator("#example-table", {
+  tabulatorGrid = new Tabulator("#example-table", {
     height:"311px",
     data : _data.reverse(),
     columns:[
         {title:"Id", field:"Id", width:290},
-        {title:"Type", field:"Type", width:90, formatter:messageTypeFormatter},
+        {title:"Type", field:"Type", width:90, align:"center",formatter:messageTypeFormatter},
         {title:"Info", field:"Info", width:260},
         {title:"Task Start Date & Time", field:"StartDateTime", width:200},
         {title:"Task End Date & Time", field:"EndDateTime", width:200},
@@ -441,4 +435,62 @@ function msgType_CountChart(data){
       })
 
       return doughnutChart
+}
+
+const message_Pulse_Count = (data2) => {
+ const isoStr = new Date().toISOString();
+  if(data2.hasOwnProperty("WHATSAPP") && data2.hasOwnProperty("SMS") && data2.hasOwnProperty("EMAIL")){
+  activeUsersChart.data.datasets[0].data.push({x:isoStr, y:data2["WHATSAPP"]})
+  activeUsersChart.data.datasets[0].data.splice(0, 1)
+  activeUsersChart.data.datasets[1].data.push({x:isoStr, y:data2["SMS"]})
+  activeUsersChart.data.datasets[1].data.splice(0, 1)
+  activeUsersChart.data.datasets[2].data.push({x:isoStr, y:data2["EMAIL"]})
+  activeUsersChart.data.datasets[2].data.splice(0, 1)
+  }else if(data2.hasOwnProperty("WHATSAPP") && data2.hasOwnProperty("SMS")){
+    activeUsersChart.data.datasets[0].data.push({x:isoStr, y:data2["WHATSAPP"]})
+    activeUsersChart.data.datasets[0].data.splice(0, 1)
+    activeUsersChart.data.datasets[1].data.push({x:isoStr, y:data2["SMS"]})
+    activeUsersChart.data.datasets[1].data.splice(0, 1)
+    activeUsersChart.data.datasets[2].data.push({x:isoStr, y:0})
+    activeUsersChart.data.datasets[2].data.splice(0, 1)
+  }else if(data2.hasOwnProperty("WHATSAPP") && data2.hasOwnProperty("EMAIL")){
+    activeUsersChart.data.datasets[0].data.push({x:isoStr, y:data2["WHATSAPP"]})
+    activeUsersChart.data.datasets[0].data.splice(0, 1)
+    activeUsersChart.data.datasets[1].data.push({x:isoStr, y:0})
+    activeUsersChart.data.datasets[1].data.splice(0, 1)
+    activeUsersChart.data.datasets[2].data.push({x:isoStr, y:data2["EMAIL"]})
+    activeUsersChart.data.datasets[2].data.splice(0, 1)
+  }else if(data2.hasOwnProperty("SMS") && data2.hasOwnProperty("EMAIL")){
+    activeUsersChart.data.datasets[0].data.push({x:isoStr, y:0})
+    activeUsersChart.data.datasets[0].data.splice(0, 1)
+    activeUsersChart.data.datasets[1].data.push({x:isoStr, y:data2["SMS"]})
+    activeUsersChart.data.datasets[1].data.splice(0, 1)
+    activeUsersChart.data.datasets[2].data.push({x:isoStr, y:data2["EMAIL"]})
+    activeUsersChart.data.datasets[2].data.splice(0, 1)
+  }
+  else if(data2.hasOwnProperty("SMS")){
+    activeUsersChart.data.datasets[0].data.push({x:isoStr, y:0})
+    activeUsersChart.data.datasets[0].data.splice(0, 1)
+    activeUsersChart.data.datasets[1].data.push({x:isoStr, y:data2["SMS"]})
+    activeUsersChart.data.datasets[1].data.splice(0, 1)
+    activeUsersChart.data.datasets[2].data.push({x:isoStr, y:0})
+    activeUsersChart.data.datasets[2].data.splice(0, 1)
+  }
+  else if(data2.hasOwnProperty("EMAIL")){
+    activeUsersChart.data.datasets[0].data.push({x:isoStr, y:0})
+    activeUsersChart.data.datasets[0].data.splice(0, 1)
+    activeUsersChart.data.datasets[1].data.push({x:isoStr, y:0})
+    activeUsersChart.data.datasets[1].data.splice(0, 1)
+    activeUsersChart.data.datasets[2].data.push({x:isoStr, y:data2["EMAIL"]})
+    activeUsersChart.data.datasets[2].data.splice(0, 1)
+  }
+  else if(data2.hasOwnProperty("WHATSAPP")){
+    activeUsersChart.data.datasets[0].data.push({x:isoStr, y:data2["WHATSAPP"]})
+    activeUsersChart.data.datasets[0].data.splice(0, 1)
+    activeUsersChart.data.datasets[1].data.push({x:isoStr, y:0})
+    activeUsersChart.data.datasets[1].data.splice(0, 1)
+    activeUsersChart.data.datasets[2].data.push({x:isoStr, y:0})
+    activeUsersChart.data.datasets[2].data.splice(0, 1)
+  }
+  activeUsersChart.update()
 }
